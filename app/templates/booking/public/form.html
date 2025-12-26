@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Book Appointment</title>
+	<meta name="description" content="Book your appointment" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
+	<link href="/static/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+	<link href="/static/css/style.bundle.css" rel="stylesheet" type="text/css" />
+	<style>
+		body {
+			background-color: #f5f8fa;
+			font-family: 'Poppins', sans-serif;
+		}
+		.booking-container {
+			max-width: 800px;
+			margin: 50px auto;
+			padding: 20px;
+		}
+		.booking-header {
+			text-align: center;
+			margin-bottom: 40px;
+		}
+		.booking-header h1 {
+			font-size: 2.5rem;
+			font-weight: 600;
+			color: #181c32;
+			margin-bottom: 10px;
+		}
+		.booking-header p {
+			font-size: 1.1rem;
+			color: #7e8299;
+		}
+		.booking-card {
+			background: white;
+			border-radius: 10px;
+			box-shadow: 0 0 20px rgba(0,0,0,0.1);
+			padding: 40px;
+		}
+	</style>
+</head>
+<body>
+	<div class="booking-container">
+		<div class="booking-header">
+			<h1>{{ booking_link.name }}</h1>
+			{% if booking_link.description %}
+			<p>{{ booking_link.description }}</p>
+			{% endif %}
+		</div>
+
+		<div class="booking-card">
+			<!--begin::Form-->
+			<form class="form" id="kt_public_booking_form">
+				<!--begin::Customer Information-->
+				<div class="mb-10">
+					<h3 class="fw-bold mb-5">Your Information</h3>
+					<!--begin::Row-->
+					<div class="row mb-10">
+						<!--begin::Col-->
+						<div class="col-lg-12">
+							<label class="form-label required">Full Name</label>
+							<input type="text" class="form-control form-control-solid" name="customer_name" placeholder="Enter your full name" required />
+						</div>
+						<!--end::Col-->
+					</div>
+					<!--end::Row-->
+					<!--begin::Row-->
+					<div class="row mb-10">
+						<!--begin::Col-->
+						<div class="col-lg-6">
+							<label class="form-label required">Email</label>
+							<input type="email" class="form-control form-control-solid" name="customer_email" placeholder="Enter your email" required />
+						</div>
+						<!--end::Col-->
+						<!--begin::Col-->
+						<div class="col-lg-6">
+							<label class="form-label">Phone</label>
+							<input type="tel" class="form-control form-control-solid" name="customer_phone" placeholder="Enter your phone number" />
+						</div>
+						<!--end::Col-->
+					</div>
+					<!--end::Row-->
+				</div>
+				<!--end::Customer Information-->
+
+				<!--begin::Service Selection-->
+				<div class="mb-10">
+					<h3 class="fw-bold mb-5">Select Service</h3>
+					<div class="mb-10">
+						<select class="form-select form-select-solid" id="service_select" name="service_ids[]" multiple="multiple" data-placeholder="Select services" data-kt-select2="true" required>
+							{% for service in services %}
+							<option value="{{ service.id }}">{{ service.name }} - {{ service.duration_minutes }} min - ${{ "%.2f"|format(service.price) }}</option>
+							{% endfor %}
+						</select>
+					</div>
+				</div>
+				<!--end::Service Selection-->
+
+				<!--begin::Staff Selection-->
+				<div class="mb-10">
+					<h3 class="fw-bold mb-5">Select Staff</h3>
+					<div class="mb-10">
+						<select class="form-select form-select-solid" id="staff_select" name="staff_id" data-placeholder="Select staff" data-kt-select2="true" required>
+							<option value="">Select staff...</option>
+							{% for s in staff %}
+							<option value="{{ s.id }}">{{ s.full_name }}</option>
+							{% endfor %}
+						</select>
+					</div>
+				</div>
+				<!--end::Staff Selection-->
+
+				<!--begin::Date & Time Selection-->
+				<div class="mb-10">
+					<h3 class="fw-bold mb-5">Select Date & Time</h3>
+					<!--begin::Row-->
+					<div class="row mb-10">
+						<!--begin::Col-->
+						<div class="col-lg-6">
+							<label class="form-label required">Date</label>
+							<input type="date" class="form-control form-control-solid" id="appointment_date" name="appointment_date" required />
+						</div>
+						<!--end::Col-->
+						<!--begin::Col-->
+						<div class="col-lg-6">
+							<label class="form-label required">Time</label>
+							<input type="time" class="form-control form-control-solid" id="appointment_time" name="appointment_time" required readonly disabled />
+						</div>
+						<!--end::Col-->
+					</div>
+					<!--end::Row-->
+					<!--begin::Available Slots-->
+					<div id="available_slots_container" style="display: none;">
+						<label class="form-label">Available Time Slots</label>
+						<div id="available_slots" class="d-flex flex-wrap gap-2 mb-5">
+							<!-- Available slots will be loaded here -->
+						</div>
+						<div id="available_slots_empty" class="text-muted mb-5"></div>
+					</div>
+					<!--end::Available Slots-->
+				</div>
+				<!--end::Date & Time Selection-->
+
+				<!--begin::Notes-->
+				<div class="mb-10">
+					<label class="form-label">Additional Notes (Optional)</label>
+					<textarea class="form-control form-control-solid" name="notes" rows="3" placeholder="Any additional information..."></textarea>
+				</div>
+				<!--end::Notes-->
+
+				<!--begin::Actions-->
+				<div class="d-flex justify-content-end">
+					<button type="submit" class="btn btn-primary" id="kt_public_booking_submit">
+						<span class="indicator-label">Submit Appointment Request</span>
+						<span class="indicator-progress">Please wait...
+							<span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+						</span>
+					</button>
+				</div>
+				<!--end::Actions-->
+			</form>
+			<!--end::Form-->
+		</div>
+	</div>
+
+	<script src="/static/plugins/global/plugins.bundle.js"></script>
+	<script src="/static/js/scripts.bundle.js"></script>
+	<script>
+		"use strict";
+
+		const token = '{{ token }}';
+		const API_BASE = '/api/public/booking/{{ token }}';
+
+		// Initialize Select2
+		if (typeof $ !== 'undefined' && $.fn.select2) {
+			$('#service_select').select2({
+				placeholder: 'Select services',
+				allowClear: true,
+				width: '100%',
+				closeOnSelect: false
+			});
+			$('#staff_select').select2({
+				placeholder: 'Select staff',
+				allowClear: true,
+				width: '100%'
+			});
+		}
+
+		// Load available slots when date/staff/services change
+		async function loadAvailableSlots() {
+			const date = document.getElementById('appointment_date').value;
+			const staffId = document.getElementById('staff_select').value;
+			const serviceSelect = document.getElementById('service_select');
+			const selectedServices = Array.from(serviceSelect.selectedOptions).map(opt => parseInt(opt.value));
+
+			if (!date || !staffId || selectedServices.length === 0) {
+				document.getElementById('available_slots_container').style.display = 'none';
+				return;
+			}
+
+			try {
+				const serviceIdsParam = selectedServices.map(id => `service_ids=${id}`).join('&');
+				const response = await fetch(`${API_BASE}/available-slots?staff_id=${staffId}&date=${date}&${serviceIdsParam}`, {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				});
+
+				if (!response.ok) {
+					const errorData = await response.json().catch(() => ({ detail: 'Failed to load available slots' }));
+					document.getElementById('available_slots_empty').textContent = errorData.detail || 'Failed to load available slots';
+					document.getElementById('available_slots_container').style.display = 'block';
+					return;
+				}
+
+				const data = await response.json();
+				const slotsContainer = document.getElementById('available_slots');
+				const emptyContainer = document.getElementById('available_slots_empty');
+				slotsContainer.innerHTML = '';
+
+				if (data.available_slots && data.available_slots.length > 0) {
+					emptyContainer.textContent = '';
+					data.available_slots.forEach(slot => {
+						const btn = document.createElement('button');
+						btn.type = 'button';
+						btn.className = 'btn btn-sm btn-light-primary';
+						// Extract only the start time (e.g., "10:00 - 10:30" -> "10:00" or "2025-12-26T14:00:00" -> "14:00")
+						let startTime = slot.split(' - ')[0];
+						// If it's a datetime string (contains 'T'), extract only HH:MM part
+						if (startTime.includes('T')) {
+							// Extract time part from ISO datetime string (e.g., "2025-12-26T14:00:00" -> "14:00")
+							const timePart = startTime.split('T')[1];
+							startTime = timePart.split(':').slice(0, 2).join(':'); // Get HH:MM only
+						}
+						btn.textContent = startTime;
+						btn.onclick = () => {
+							// Set time input value (format: HH:MM)
+							const timeInput = document.getElementById('appointment_time');
+							timeInput.value = startTime;
+							// Remove disabled state to allow form submission (readonly remains for visual)
+							timeInput.disabled = false;
+						};
+						slotsContainer.appendChild(btn);
+					});
+					document.getElementById('available_slots_container').style.display = 'block';
+				} else {
+					emptyContainer.textContent = 'No available slots for this date';
+					document.getElementById('available_slots_container').style.display = 'block';
+				}
+			} catch (error) {
+				console.error('Error loading available slots:', error);
+				document.getElementById('available_slots_empty').textContent = 'Error loading available slots';
+				document.getElementById('available_slots_container').style.display = 'block';
+			}
+		}
+
+		// Event listeners for available slots
+		document.getElementById('appointment_date')?.addEventListener('change', loadAvailableSlots);
+		document.getElementById('staff_select')?.addEventListener('change', loadAvailableSlots);
+		document.getElementById('service_select')?.addEventListener('change', loadAvailableSlots);
+
+		// Form submit handler
+		document.getElementById('kt_public_booking_form')?.addEventListener('submit', async function(e) {
+			e.preventDefault();
+			
+			const form = e.target;
+			const submitButton = document.getElementById('kt_public_booking_submit');
+			const indicator = submitButton.querySelector('.indicator-label');
+			const progress = submitButton.querySelector('.indicator-progress');
+			
+			submitButton.disabled = true;
+			indicator.style.display = 'none';
+			progress.style.display = 'inline-block';
+
+			// Get form data
+			const serviceSelect = document.getElementById('service_select');
+			const selectedServices = Array.from(serviceSelect.selectedOptions).map(opt => parseInt(opt.value));
+			const staffId = parseInt(document.getElementById('staff_select').value);
+			const date = document.getElementById('appointment_date').value;
+			const timeInput = document.getElementById('appointment_time');
+			const time = timeInput.value;
+
+			// Check if time is selected
+			if (!time) {
+				if (typeof Swal !== 'undefined') {
+					Swal.fire({
+						text: "Please select a time slot",
+						icon: "warning",
+						buttonsStyling: false,
+						confirmButtonText: "Ok",
+						customClass: {
+							confirmButton: "btn btn-primary"
+						}
+					});
+				} else {
+					alert('Please select a time slot');
+				}
+				submitButton.disabled = false;
+				indicator.style.display = 'inline-block';
+				progress.style.display = 'none';
+				return;
+			}
+
+			if (selectedServices.length === 0) {
+				if (typeof Swal !== 'undefined') {
+					Swal.fire({
+						text: "Please select at least one service",
+						icon: "warning",
+						buttonsStyling: false,
+						confirmButtonText: "Ok",
+						customClass: {
+							confirmButton: "btn btn-primary"
+						}
+					});
+				} else {
+					alert('Please select at least one service');
+				}
+				submitButton.disabled = false;
+				indicator.style.display = 'inline-block';
+				progress.style.display = 'none';
+				return;
+			}
+
+			if (!staffId) {
+				if (typeof Swal !== 'undefined') {
+					Swal.fire({
+						text: "Please select a staff member",
+						icon: "warning",
+						buttonsStyling: false,
+						confirmButtonText: "Ok",
+						customClass: {
+							confirmButton: "btn btn-primary"
+						}
+					});
+				} else {
+					alert('Please select a staff member');
+				}
+				submitButton.disabled = false;
+				indicator.style.display = 'inline-block';
+				progress.style.display = 'none';
+				return;
+			}
+
+			// Combine date and time
+			const appointmentDateTime = `${date}T${time}:00`;
+
+			const formData = {
+				customer_name: form.customer_name.value.trim(),
+				customer_email: form.customer_email.value.trim(),
+				customer_phone: form.customer_phone.value.trim() || null,
+				service_ids: selectedServices,
+				staff_id: staffId,
+				appointment_date: appointmentDateTime,
+				notes: form.notes.value.trim() || null
+			};
+
+			// Validation
+			if (!formData.customer_name || !formData.customer_email) {
+				if (typeof Swal !== 'undefined') {
+					Swal.fire({
+						text: "Name and email are required",
+						icon: "warning",
+						buttonsStyling: false,
+						confirmButtonText: "Ok",
+						customClass: {
+							confirmButton: "btn btn-primary"
+						}
+					});
+				} else {
+					alert('Name and email are required');
+				}
+				submitButton.disabled = false;
+				indicator.style.display = 'inline-block';
+				progress.style.display = 'none';
+				return;
+			}
+
+			try {
+				const response = await fetch(`${API_BASE}/create`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(formData)
+				});
+
+				if (!response.ok) {
+					const errorData = await response.json().catch(() => ({ detail: 'Failed to submit appointment request' }));
+					throw new Error(errorData.detail || 'Failed to submit appointment request');
+				}
+
+				const result = await response.json();
+
+				// Show success message
+				if (typeof Swal !== 'undefined') {
+					Swal.fire({
+						text: result.message || "Appointment request submitted successfully! We will review and confirm your appointment.",
+						icon: "success",
+						buttonsStyling: false,
+						confirmButtonText: "Ok",
+						customClass: {
+							confirmButton: "btn btn-primary"
+						}
+					}).then(() => {
+						// Reset form
+						form.reset();
+						if (typeof $ !== 'undefined' && $.fn.select2) {
+							$('#service_select, #staff_select').val(null).trigger('change');
+						}
+					});
+				} else {
+					alert(result.message || 'Appointment request submitted successfully!');
+					form.reset();
+				}
+
+			} catch (error) {
+				console.error('Error submitting appointment request:', error);
+				if (typeof Swal !== 'undefined') {
+					Swal.fire({
+						text: "Error: " + error.message,
+						icon: "error",
+						buttonsStyling: false,
+						confirmButtonText: "Ok",
+						customClass: {
+							confirmButton: "btn btn-primary"
+						}
+					});
+				} else {
+					alert('Error: ' + error.message);
+				}
+			} finally {
+				submitButton.disabled = false;
+				indicator.style.display = 'inline-block';
+				progress.style.display = 'none';
+			}
+		});
+	</script>
+</body>
+</html>

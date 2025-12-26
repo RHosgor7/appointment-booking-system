@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Logging out...</title>
+	<link rel="shortcut icon" href="/static/assets/logos/favicon.png" />
+	<!--begin::Fonts-->
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
+	<!--end::Fonts-->
+	<!--begin::Global Stylesheets Bundle-->
+	<link href="/static/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+	<link href="/static/css/style.bundle.css" rel="stylesheet" type="text/css" />
+	<!--end::Global Stylesheets Bundle-->
+</head>
+<body class="app-default">
+	<!--begin::Root-->
+	<div class="d-flex flex-column flex-root" id="kt_app_root">
+		<!--begin::Page-->
+		<div class="page d-flex flex-row flex-column-fluid">
+			<!--begin::Wrapper-->
+			<div class="wrapper d-flex flex-column flex-row-fluid" id="kt_wrapper">
+				<!--begin::Content-->
+				<div class="content d-flex flex-column flex-column-fluid" id="kt_content">
+					<!--begin::Post-->
+					<div class="post fs-6 d-flex flex-column-fluid" id="kt_post">
+						<!--begin::Container-->
+						<div id="kt_content_container" class="container-xxl">
+							<!--begin::Card-->
+							<div class="card">
+								<div class="card-body text-center p-10 py-lg-20">
+									<!--begin::Illustration-->
+									<div class="mb-10">
+										<img src="/static/assets/illustrations/dozzy-1/18.png" class="mw-100 mh-300px theme-light-show" alt="" />
+										<img src="/static/assets/illustrations/dozzy-1/18-dark.png" class="mw-100 mh-300px theme-dark-show" alt="" />
+									</div>
+									<!--end::Illustration-->
+									<!--begin::Message-->
+									<h1 class="fw-bolder fs-2qx text-gray-800 mb-4">Logging out...</h1>
+									<div class="fw-semibold fs-6 text-gray-500 mb-7">Please wait while we log you out.</div>
+									<!--end::Message-->
+									<!--begin::Spinner-->
+									<div class="mb-0">
+										<div class="spinner-border text-primary" role="status">
+											<span class="visually-hidden">Loading...</span>
+										</div>
+									</div>
+									<!--end::Spinner-->
+								</div>
+							</div>
+							<!--end::Card-->
+						</div>
+						<!--end::Container-->
+					</div>
+					<!--end::Post-->
+				</div>
+				<!--end::Content-->
+			</div>
+			<!--end::Wrapper-->
+		</div>
+		<!--end::Page-->
+	</div>
+	<!--end::Root-->
+	<!--begin::Javascript-->
+	<script>
+		"use strict";
+		
+		// Remove token from localStorage
+		localStorage.removeItem('access_token');
+		localStorage.removeItem('token_type');
+		
+		// Remove token from cookie
+		document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+		
+		// Redirect to login page after a short delay
+		setTimeout(function() {
+			window.location.href = '/login';
+		}, 500);
+	</script>
+	<!--end::Javascript-->
+</body>
+</html>
+

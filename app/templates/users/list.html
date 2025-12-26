@@ -1,0 +1,622 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--begin::Content container-->
+<div id="kt_app_content_container" class="app-container container-xxl">
+	<!--begin::Card-->
+	<div class="card">
+		<!--begin::Card header-->
+		<div class="card-header border-0 pt-6">
+			<!--begin::Card title-->
+			<div class="card-title">
+				<!--begin::Search-->
+				<div class="d-flex align-items-center position-relative my-1">
+					<i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+						<span class="path1"></span>
+						<span class="path2"></span>
+					</i>
+					<input type="text" id="kt_users_table_search" class="form-control form-control-solid w-250px ps-12" placeholder="Search Users" />
+				</div>
+				<!--end::Search-->
+			</div>
+			<!--end::Card title-->
+			<!--begin::Card toolbar-->
+			<div class="card-toolbar flex-row-fluid justify-content-end gap-5">
+				<!--begin::Filter Menu-->
+				<div class="m-0">
+					<!--begin::Menu toggle-->
+					<a href="#" class="btn btn-flex btn-secondary fw-bold" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
+						<i class="ki-duotone ki-filter fs-6 text-muted me-1">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>Filter</a>
+					<!--end::Menu toggle-->
+					<!--begin::Menu-->
+					<div class="menu menu-sub menu-sub-dropdown w-300px w-md-350px" data-kt-menu="true" id="kt_users_filter_menu">
+						<!--begin::Header-->
+						<div class="px-7 py-5">
+							<div class="fs-5 text-gray-900 fw-bold">Filter Options</div>
+						</div>
+						<!--end::Header-->
+						<!--begin::Menu separator-->
+						<div class="separator border-gray-200"></div>
+						<!--end::Menu separator-->
+						<!--begin::Form-->
+						<div class="px-7 py-5">
+							<!--begin::Input group - Role-->
+							<div class="mb-10">
+								<label class="form-label fw-semibold">Role:</label>
+								<select class="form-select form-select-solid" id="filter_role" data-control="select2" data-placeholder="Select role">
+									<option value="">All Roles</option>
+									<option value="owner">Owner</option>
+									<option value="admin">Admin</option>
+									<option value="staff">Staff</option>
+								</select>
+							</div>
+							<!--end::Input group-->
+							<!--begin::Actions-->
+							<div class="d-flex justify-content-end">
+								<button type="button" class="btn btn-sm btn-light btn-active-light-primary me-2" id="btn_reset_filters" data-kt-menu-dismiss="true">Reset</button>
+								<button type="button" class="btn btn-sm btn-primary" id="btn_apply_filters" data-kt-menu-dismiss="true">Apply</button>
+							</div>
+							<!--end::Actions-->
+						</div>
+						<!--end::Form-->
+					</div>
+					<!--end::Menu-->
+				</div>
+				<!--end::Filter Menu-->
+				<!--begin::Add user-->
+				<a href="/users/create" class="btn btn-primary">
+					<i class="ki-duotone ki-plus fs-2"></i>Create User
+				</a>
+				<!--end::Add user-->
+			</div>
+			<!--end::Card toolbar-->
+		</div>
+		<!--end::Card header-->
+		<!--begin::Card body-->
+		<div class="card-body pt-0">
+			<!--begin::Table-->
+			<table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_users_table">
+				<thead>
+					<tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
+						<th class="min-w-80px">ID</th>
+						<th class="min-w-125px">Full Name</th>
+						<th class="min-w-125px">Email</th>
+						<th class="min-w-100px">Role</th>
+						<th class="min-w-120px">Has Staff Profile</th>
+						<th class="min-w-125px">Created Date</th>
+						<th class="text-end min-w-70px">Actions</th>
+					</tr>
+				</thead>
+				<tbody class="fw-semibold text-gray-600" id="kt_users_table_body">
+					<!-- Data will be loaded here via JavaScript -->
+					<tr id="kt_users_table_loading">
+						<td colspan="7" class="text-center py-10">
+							<div class="spinner-border text-primary" role="status">
+								<span class="visually-hidden">Loading...</span>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<!--end::Table-->
+		</div>
+		<!--end::Card body-->
+	</div>
+	<!--end::Card-->
+	<!--begin::Table Info (outside card)-->
+	<div class="d-flex align-items-center justify-content-between flex-wrap mt-5">
+		<div class="text-gray-600 fw-semibold fs-6" id="kt_users_table_info">
+			<!-- DataTable info will be displayed here -->
+		</div>
+	</div>
+	<!--end::Table Info-->
+</div>
+<!--end::Content container-->
+
+<!--begin::Modal - View User-->
+<div class="modal fade" id="kt_modal_view_user" tabindex="-1" aria-hidden="true">
+	<!--begin::Modal dialog-->
+	<div class="modal-dialog modal-dialog-centered mw-650px">
+		<!--begin::Modal content-->
+		<div class="modal-content">
+			<!--begin::Modal header-->
+			<div class="modal-header">
+				<!--begin::Modal title-->
+				<h2 class="fw-bold">User Details</h2>
+				<!--end::Modal title-->
+				<!--begin::Close-->
+				<div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
+					<i class="ki-duotone ki-cross fs-1">
+						<span class="path1"></span>
+						<span class="path2"></span>
+					</i>
+				</div>
+				<!--end::Close-->
+			</div>
+			<!--end::Modal header-->
+			<!--begin::Modal body-->
+			<div class="modal-body py-10 px-lg-17" id="kt_modal_view_user_body">
+				<!-- Content will be loaded here -->
+			</div>
+			<!--end::Modal body-->
+			<!--begin::Modal footer-->
+			<div class="modal-footer">
+				<button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+			</div>
+			<!--end::Modal footer-->
+		</div>
+		<!--end::Modal content-->
+	</div>
+	<!--end::Modal dialog-->
+</div>
+<!--end::Modal - View User-->
+{% endblock %}
+
+{% block scripts %}
+<script>
+	"use strict";
+
+	// Token kontrolü
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		window.location.href = '/login';
+	}
+
+	// API base URL
+	const API_BASE = '/api/users';
+
+	// Filter state
+	let currentFilters = {
+		search: null,
+		role: null
+	};
+
+	// Race condition guard
+	let currentAbortController = null;
+	let currentRequestId = 0;
+
+	// DataTable instance
+	let datatable = null;
+	let table = null;
+	let currentPageLength = 10;
+
+	// Escape HTML to prevent XSS
+	function escapeHtml(text) {
+		const str = String(text || '');
+		if (!str) return '';
+		const map = {
+			'&': '&amp;',
+			'<': '&lt;',
+			'>': '&gt;',
+			'"': '&quot;',
+			"'": '&#039;'
+		};
+		return str.replace(/[&<>"']/g, m => map[m]);
+	}
+
+	// Load users function
+	async function loadUsers() {
+		if (currentAbortController) {
+			currentAbortController.abort();
+		}
+
+		currentAbortController = new AbortController();
+		const signal = currentAbortController.signal;
+		const requestId = ++currentRequestId;
+
+		const tbody = document.getElementById('kt_users_table_body');
+		const loadingRow = document.getElementById('kt_users_table_loading');
+		
+		if (!tbody) {
+			console.warn('kt_users_table_body element not found');
+			return;
+		}
+
+		try {
+			// Build query parameters
+			const params = new URLSearchParams();
+			if (currentFilters.search && currentFilters.search.trim()) {
+				params.append('search', currentFilters.search.trim());
+			}
+			if (currentFilters.role && currentFilters.role.trim()) {
+				params.append('role', currentFilters.role.trim());
+			}
+			
+			const queryString = params.toString();
+			const url = queryString ? `${API_BASE}?${queryString}` : API_BASE;
+			
+			const response = await fetch(url, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				signal: signal
+			});
+
+			if (signal.aborted) return;
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				if (response.status === 403) {
+					Swal.fire({
+						text: "You don't have permission to view users",
+						icon: "error",
+						buttonsStyling: false,
+						confirmButtonText: "Ok",
+						customClass: {
+							confirmButton: "btn btn-primary"
+						}
+					}).then(() => {
+						window.location.href = '/';
+					});
+					return;
+				}
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const users = await response.json();
+
+			if (signal.aborted || requestId !== currentRequestId) return;
+			
+			if (loadingRow) {
+				loadingRow.remove();
+			}
+
+			// Destroy DataTable if exists
+			if (datatable) {
+				try {
+					currentPageLength = datatable.page.info().length;
+				} catch (e) {}
+				datatable.destroy();
+				datatable = null;
+			}
+
+			tbody.innerHTML = '';
+
+			if (signal.aborted || requestId !== currentRequestId) return;
+
+			if (users.length === 0) {
+				tbody.innerHTML = '';
+				if (typeof $ !== 'undefined' && $.fn.DataTable && table) {
+					datatable = $(table).DataTable({
+						"info": false,
+						"order": [],
+						"pageLength": currentPageLength,
+						"data": [],
+						"columns": [
+							null, // ID
+							null, // Full Name
+							null, // Email
+							null, // Role
+							null, // Has Staff Profile
+							null, // Created Date
+							{"orderable": false} // Actions
+						],
+						"language": {
+							"emptyTable": "No users found",
+							"zeroRecords": "No matching users found"
+						}
+					});
+					datatable.on('draw', updateTableInfo);
+					datatable.on('length.dt', (e, settings, len) => { currentPageLength = len; });
+					updateTableInfo();
+				}
+				return;
+			}
+
+			// Populate table
+			const renderedIds = new Set();
+			users.forEach(user => {
+				if (renderedIds.has(user.id)) return;
+				renderedIds.add(user.id);
+
+				if (signal.aborted || requestId !== currentRequestId) return;
+
+				const row = document.createElement('tr');
+				const createdDate = new Date(user.created_at);
+				const formattedDate = createdDate.toLocaleDateString('en-US', {
+					year: 'numeric',
+					month: 'short',
+					day: 'numeric',
+					hour: '2-digit',
+					minute: '2-digit'
+				});
+
+				// Role badge
+				let roleBadge = '';
+				if (user.role === 'owner') {
+					roleBadge = '<span class="badge badge-light-success">Owner</span>';
+				} else if (user.role === 'admin') {
+					roleBadge = '<span class="badge badge-light-primary">Admin</span>';
+				} else if (user.role === 'staff') {
+					roleBadge = '<span class="badge badge-light-info">Staff</span>';
+				}
+
+				// Has Staff Profile badge
+				const hasStaffBadge = user.has_staff_profile 
+					? '<span class="badge badge-light-success">Yes</span>'
+					: '<span class="badge badge-light-secondary">No</span>';
+
+				row.innerHTML = `
+					<td>
+						<div class="text-gray-800 fw-bold">#${escapeHtml(user.id)}</div>
+					</td>
+					<td>${escapeHtml(user.full_name)}</td>
+					<td>
+						<a href="mailto:${escapeHtml(user.email)}" class="text-gray-600 text-hover-primary">${escapeHtml(user.email)}</a>
+					</td>
+					<td>${roleBadge}</td>
+					<td>${hasStaffBadge}</td>
+					<td>${formattedDate}</td>
+					<td class="text-end">
+						<a href="#" class="btn btn-sm btn-light btn-flex btn-center btn-active-light-primary" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end" onclick="viewUser(${user.id}); return false;">
+							View
+						</a>
+					</td>
+				`;
+				tbody.appendChild(row);
+			});
+
+			if (signal.aborted || requestId !== currentRequestId) return;
+
+			if (typeof $ !== 'undefined' && $.fn.DataTable && table) {
+				datatable = $(table).DataTable({
+					"info": false,
+					"order": [],
+					"pageLength": currentPageLength,
+					"columns": [
+						null, // ID
+						null, // Full Name
+						null, // Email
+						null, // Role
+						null, // Has Staff Profile
+						null, // Created Date
+						{"orderable": false} // Actions
+					],
+					"language": {
+						"emptyTable": "No users found",
+						"zeroRecords": "No matching users found"
+					}
+				});
+
+				datatable.on('draw', updateTableInfo);
+				datatable.on('length.dt', (e, settings, len) => { currentPageLength = len; });
+				updateTableInfo();
+			}
+
+			if (typeof KTMenu !== 'undefined') {
+				KTMenu.init();
+			}
+
+		} catch (error) {
+			if (error.name === 'AbortError') return;
+			console.error('Error loading users:', error);
+			if (loadingRow) {
+				loadingRow.innerHTML = `
+					<td colspan="7" class="text-center py-10">
+						<div class="text-danger">Error loading users. Please try again.</div>
+					</td>
+				`;
+			}
+		} finally {
+			if (currentAbortController && currentAbortController.signal === signal) {
+				currentAbortController = null;
+			}
+		}
+	}
+
+	// View user details
+	async function viewUser(userId) {
+		try {
+			const response = await fetch(`${API_BASE}/${userId}`, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const user = await response.json();
+			const modalBody = document.getElementById('kt_modal_view_user_body');
+			
+			if (modalBody) {
+				const createdDate = new Date(user.created_at);
+				const formattedDate = createdDate.toLocaleDateString('en-US', {
+					year: 'numeric',
+					month: 'long',
+					day: 'numeric',
+					hour: '2-digit',
+					minute: '2-digit'
+				});
+
+				let roleBadge = '';
+				if (user.role === 'owner') {
+					roleBadge = '<span class="badge badge-light-success">Owner</span>';
+				} else if (user.role === 'admin') {
+					roleBadge = '<span class="badge badge-light-primary">Admin</span>';
+				} else if (user.role === 'staff') {
+					roleBadge = '<span class="badge badge-light-info">Staff</span>';
+				}
+
+				const hasStaffBadge = user.has_staff_profile 
+					? '<span class="badge badge-light-success">Yes</span>'
+					: '<span class="badge badge-light-secondary">No</span>';
+
+				let staffInfo = '';
+				if (user.has_staff_profile && user.staff_id) {
+					// Fetch staff details
+					try {
+						const staffResponse = await fetch(`/api/staff/${user.staff_id}`, {
+							method: 'GET',
+							headers: {
+								'Authorization': `Bearer ${token}`,
+								'Content-Type': 'application/json'
+							}
+						});
+						if (staffResponse.ok) {
+							const staff = await staffResponse.json();
+							const staffStatusBadge = staff.is_active 
+								? '<span class="badge badge-light-success">Active</span>'
+								: '<span class="badge badge-light-danger">Inactive</span>';
+							staffInfo = `
+								<div class="separator separator-dashed my-5"></div>
+								<div class="mb-5">
+									<label class="form-label fw-bold">Staff Profile Information</label>
+									<div class="d-flex flex-column gap-3 mt-3">
+										<div class="d-flex justify-content-between">
+											<span class="text-gray-600">Full Name:</span>
+											<span class="text-gray-800 fw-semibold">${escapeHtml(staff.full_name)}</span>
+										</div>
+										${staff.phone ? `
+										<div class="d-flex justify-content-between">
+											<span class="text-gray-600">Phone:</span>
+											<span class="text-gray-800 fw-semibold">${escapeHtml(staff.phone)}</span>
+										</div>
+										` : ''}
+										<div class="d-flex justify-content-between">
+											<span class="text-gray-600">Status:</span>
+											${staffStatusBadge}
+										</div>
+									</div>
+								</div>
+							`;
+						}
+					} catch (e) {
+						console.error('Error loading staff details:', e);
+					}
+				}
+
+				modalBody.innerHTML = `
+					<div class="mb-5">
+						<label class="form-label fw-bold">Full Name</label>
+						<div class="text-gray-800">${escapeHtml(user.full_name)}</div>
+					</div>
+					<div class="mb-5">
+						<label class="form-label fw-bold">Email</label>
+						<div class="text-gray-800">
+							<a href="mailto:${escapeHtml(user.email)}" class="text-primary">${escapeHtml(user.email)}</a>
+						</div>
+					</div>
+					<div class="mb-5">
+						<label class="form-label fw-bold">Role</label>
+						<div>${roleBadge}</div>
+					</div>
+					<div class="mb-5">
+						<label class="form-label fw-bold">Has Staff Profile</label>
+						<div>${hasStaffBadge}</div>
+					</div>
+					<div class="mb-5">
+						<label class="form-label fw-bold">Created Date</label>
+						<div class="text-gray-800">${formattedDate}</div>
+					</div>
+					${staffInfo}
+				`;
+			}
+
+			// Show modal
+			const modal = new bootstrap.Modal(document.getElementById('kt_modal_view_user'));
+			modal.show();
+
+		} catch (error) {
+			console.error('Error loading user details:', error);
+			Swal.fire({
+				text: "Error loading user details",
+				icon: "error",
+				buttonsStyling: false,
+				confirmButtonText: "Ok",
+				customClass: {
+					confirmButton: "btn btn-primary"
+				}
+			});
+		}
+	}
+
+	// Update table info
+	function updateTableInfo() {
+		if (!datatable) return;
+		const info = datatable.page.info();
+		const infoElement = document.getElementById('kt_users_table_info');
+		if (infoElement) {
+			const start = info.start + 1;
+			const end = info.end;
+			const total = info.recordsTotal;
+			const filtered = info.recordsDisplay;
+			if (filtered === 0) {
+				infoElement.textContent = 'No users found';
+			} else {
+				infoElement.textContent = `Showing ${start} to ${end} of ${total} users`;
+			}
+		}
+	}
+
+	// Load users on page load
+	document.addEventListener('DOMContentLoaded', function() {
+		table = document.querySelector('#kt_users_table');
+		
+		if (!table) {
+			console.warn('kt_users_table element not found');
+			return;
+		}
+
+		// Search functionality
+		const searchInput = document.getElementById('kt_users_table_search');
+		if (searchInput) {
+			let searchTimeout;
+			searchInput.addEventListener('keyup', function(e) {
+				clearTimeout(searchTimeout);
+				searchTimeout = setTimeout(() => {
+					currentFilters.search = e.target.value;
+					loadUsers();
+				}, 500);
+			});
+		}
+
+		// Filter handlers
+		const filterRole = document.getElementById('filter_role');
+		const btnApplyFilters = document.getElementById('btn_apply_filters');
+		const btnResetFilters = document.getElementById('btn_reset_filters');
+
+		if (btnApplyFilters) {
+			btnApplyFilters.addEventListener('click', function() {
+				currentFilters.role = filterRole ? filterRole.value : null;
+				loadUsers();
+			});
+		}
+
+		if (btnResetFilters) {
+			btnResetFilters.addEventListener('click', function() {
+				currentFilters.search = null;
+				currentFilters.role = null;
+				if (searchInput) searchInput.value = '';
+				if (filterRole) filterRole.value = '';
+				// Reinitialize select2 if needed
+				if (typeof $ !== 'undefined' && filterRole) {
+					$(filterRole).val('').trigger('change');
+				}
+				loadUsers();
+			});
+		}
+
+		// Initial load
+		loadUsers();
+	});
+</script>
+{% endblock %}
+

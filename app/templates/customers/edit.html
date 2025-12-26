@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--begin::Content container-->
+<div id="kt_app_content_container" class="app-container container-xxl">
+	<!--begin::Card-->
+	<div class="card">
+		<!--begin::Card header-->
+		<div class="card-header border-0 pt-6">
+			<!--begin::Card title-->
+			<div class="card-title">
+				<h2 class="fw-bold">Edit Customer</h2>
+			</div>
+			<!--end::Card title-->
+		</div>
+		<!--end::Card header-->
+		<!--begin::Card body-->
+		<div class="card-body pt-0">
+			<!--begin::Loading-->
+			<div id="customer_loading" class="text-center py-10">
+				<div class="spinner-border text-primary" role="status">
+					<span class="visually-hidden">Loading...</span>
+				</div>
+			</div>
+			<!--end::Loading-->
+			<!--begin::Form-->
+			<form class="form" id="kt_customer_edit_form" style="display: none;">
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-12">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Full Name</label>
+							<input type="text" class="form-control form-control-solid" name="full_name" placeholder="Enter full name" required />
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Email</label>
+							<input type="email" class="form-control form-control-solid" name="email" placeholder="Enter email address" required />
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label">Phone</label>
+							<input type="tel" class="form-control form-control-solid" name="phone" placeholder="Enter phone number" />
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Actions-->
+				<div class="d-flex justify-content-end">
+					<a href="/customers" class="btn btn-light me-3">Cancel</a>
+					<a href="#" class="btn btn-light me-3" id="view_customer_btn">View</a>
+					<button type="submit" class="btn btn-primary" id="kt_customer_edit_submit">
+						<span class="indicator-label">Update Customer</span>
+						<span class="indicator-progress">Please wait...
+							<span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+						</span>
+					</button>
+				</div>
+				<!--end::Actions-->
+			</form>
+			<!--end::Form-->
+		</div>
+		<!--end::Card body-->
+	</div>
+	<!--end::Card-->
+</div>
+<!--end::Content container-->
+{% endblock %}
+
+{% block scripts %}
+<script>
+	"use strict";
+
+	// Token - will be checked in DOMContentLoaded
+	let token = null;
+
+	// Load customer
+	async function loadCustomer(customerId) {
+		const CUSTOMER_API = `/api/customers/${customerId}`;
+		try {
+			const response = await fetch(CUSTOMER_API, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				if (response.status === 404) {
+					if (typeof Swal !== 'undefined') {
+						Swal.fire({
+							text: "Customer not found",
+							icon: "error",
+							buttonsStyling: false,
+							confirmButtonText: "Ok",
+							customClass: {
+								confirmButton: "btn btn-primary"
+							}
+						}).then(() => {
+							window.location.href = '/customers';
+						});
+					} else {
+						alert('Customer not found');
+						window.location.href = '/customers';
+					}
+					return;
+				}
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const customer = await response.json();
+			
+			// Hide loading, show form
+			document.getElementById('customer_loading').style.display = 'none';
+			document.getElementById('kt_customer_edit_form').style.display = 'block';
+
+			// Populate form
+			document.querySelector('input[name="full_name"]').value = customer.full_name || '';
+			document.querySelector('input[name="email"]').value = customer.email || '';
+			document.querySelector('input[name="phone"]').value = customer.phone || '';
+			
+			// View button
+			document.getElementById('view_customer_btn').href = `/customers/${customerId}`;
+
+		} catch (error) {
+			console.error('Error loading customer:', error);
+			document.getElementById('customer_loading').style.display = 'none';
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Error loading customer. Please refresh the page.",
+					icon: "error",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				});
+			} else {
+				alert('Error loading customer. Please refresh the page.');
+			}
+		}
+	}
+
+	// Form submit handler - will be set up in DOMContentLoaded
+	function setupFormHandler(customerId) {
+		const CUSTOMER_API = `/api/customers/${customerId}`;
+		document.getElementById('kt_customer_edit_form')?.addEventListener('submit', async function(e) {
+			e.preventDefault();
+			
+			const form = e.target;
+			const submitButton = document.getElementById('kt_customer_edit_submit');
+			const indicator = submitButton.querySelector('.indicator-label');
+			const progress = submitButton.querySelector('.indicator-progress');
+			
+			// Show loading state
+			submitButton.disabled = true;
+			indicator.style.display = 'none';
+			progress.style.display = 'inline-block';
+
+			// Get form data
+			const formData = {
+				full_name: form.full_name.value.trim(),
+				email: form.email.value.trim(),
+				phone: form.phone.value.trim() || null
+			};
+
+			// Validation
+			if (!formData.full_name) {
+				if (typeof Swal !== 'undefined') {
+					Swal.fire({
+						text: "Full name is required",
+						icon: "warning",
+						buttonsStyling: false,
+						confirmButtonText: "Ok",
+						customClass: {
+							confirmButton: "btn btn-primary"
+						}
+					});
+				} else {
+					alert('Full name is required');
+				}
+				submitButton.disabled = false;
+				indicator.style.display = 'inline-block';
+				progress.style.display = 'none';
+				return;
+			}
+
+			if (!formData.email) {
+				if (typeof Swal !== 'undefined') {
+					Swal.fire({
+						text: "Email is required",
+						icon: "warning",
+						buttonsStyling: false,
+						confirmButtonText: "Ok",
+						customClass: {
+							confirmButton: "btn btn-primary"
+						}
+					});
+				} else {
+					alert('Email is required');
+				}
+				submitButton.disabled = false;
+				indicator.style.display = 'inline-block';
+				progress.style.display = 'none';
+				return;
+			}
+
+			// Email validation
+			if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+				if (typeof Swal !== 'undefined') {
+					Swal.fire({
+						text: "Please enter a valid email address",
+						icon: "warning",
+						buttonsStyling: false,
+						confirmButtonText: "Ok",
+						customClass: {
+							confirmButton: "btn btn-primary"
+						}
+					});
+				} else {
+					alert('Please enter a valid email address');
+				}
+				submitButton.disabled = false;
+				indicator.style.display = 'inline-block';
+				progress.style.display = 'none';
+				return;
+			}
+
+			try {
+				const response = await fetch(CUSTOMER_API, {
+				method: 'PUT',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(formData)
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				const errorData = await response.json();
+				throw new Error(errorData.detail || 'Failed to update customer');
+			}
+
+			// Show success message and redirect
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Customer updated successfully!",
+					icon: "success",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				}).then(() => {
+					window.location.href = `/customers/${customerId}`;
+				});
+			} else {
+				alert('Customer updated successfully!');
+				window.location.href = `/customers/${customerId}`;
+			}
+
+		} catch (error) {
+			console.error('Error updating customer:', error);
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Error: " + error.message,
+					icon: "error",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				});
+			} else {
+				alert('Error: ' + error.message);
+			}
+		} finally {
+			// Hide loading state
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+		}
+		});
+	}
+
+	// Load data on page load
+	document.addEventListener('DOMContentLoaded', function() {
+		// Token kontrolü
+		token = localStorage.getItem('access_token');
+		if (!token) {
+			window.location.href = '/login';
+			return;
+		}
+		
+		// Get customer ID from URL
+		// URL format: /customers/{id}/edit
+		const pathParts = window.location.pathname.split('/').filter(part => part);
+		let customerId = null;
+		
+		// Find the customer ID in the path
+		// Path should be: ['customers', '{id}', 'edit']
+		if (pathParts.length >= 2 && pathParts[0] === 'customers') {
+			customerId = pathParts[1];
+		}
+		
+		if (!customerId || isNaN(customerId)) {
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Invalid customer ID",
+					icon: "error",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				}).then(() => {
+					window.location.href = '/customers';
+				});
+			} else {
+				alert('Invalid customer ID');
+				window.location.href = '/customers';
+			}
+			return;
+		}
+		
+		// Setup form handler
+		setupFormHandler(customerId);
+		
+		// Load customer data
+		loadCustomer(customerId);
+	});
+</script>
+{% endblock %}
+

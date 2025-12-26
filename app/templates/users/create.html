@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--begin::Content container-->
+<div id="kt_app_content_container" class="app-container container-xxl">
+	<!--begin::Card-->
+	<div class="card">
+		<!--begin::Card header-->
+		<div class="card-header border-0 pt-6">
+			<!--begin::Card title-->
+			<div class="card-title">
+				<h2 class="fw-bold">Create User</h2>
+			</div>
+			<!--end::Card title-->
+		</div>
+		<!--end::Card header-->
+		<!--begin::Card body-->
+		<div class="card-body pt-0">
+			<!--begin::Form-->
+			<form class="form" id="kt_user_create_form">
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-12">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Full Name</label>
+							<input type="text" class="form-control form-control-solid" name="full_name" placeholder="Enter full name" required />
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Email</label>
+							<input type="email" class="form-control form-control-solid" name="email" placeholder="Enter email address" required />
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Password</label>
+							<input type="password" class="form-control form-control-solid" name="password" placeholder="Enter password" required />
+							<div class="form-text">Minimum 8 characters</div>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Role</label>
+							<select class="form-select form-select-solid" name="role" id="role_select" data-control="select2" data-placeholder="Select role" required>
+								<option value="">Select role</option>
+								<option value="admin">Admin</option>
+								<option value="staff">Staff</option>
+							</select>
+							<div class="form-text">Owner role cannot be assigned via this form</div>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row - Link to Staff-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-12">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-check form-check-custom form-check-solid">
+								<input class="form-check-input" type="checkbox" name="link_to_staff" id="link_to_staff_checkbox" value="1" />
+								<span class="form-check-label fw-semibold">Link to existing Staff profile</span>
+							</label>
+							<div class="form-text">Link this user to an existing staff member who doesn't have panel access yet</div>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row - Staff Selection (Hidden by default)-->
+				<div class="row mb-10" id="staff_selection_fields" style="display: none;">
+					<!--begin::Col-->
+					<div class="col-lg-12">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Select Staff</label>
+							<select class="form-select form-select-solid" name="link_to_staff_id" id="staff_select" data-control="select2" data-placeholder="Select staff member">
+								<option value="">Select staff member</option>
+							</select>
+							<div class="form-text">Only staff members without panel access are shown</div>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Actions-->
+				<div class="d-flex justify-content-end">
+					<a href="/users" class="btn btn-light me-3">Cancel</a>
+					<button type="submit" class="btn btn-primary" id="kt_user_create_submit">
+						<span class="indicator-label">Create User</span>
+						<span class="indicator-progress">Please wait...
+							<span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+						</span>
+					</button>
+				</div>
+				<!--end::Actions-->
+			</form>
+			<!--end::Form-->
+		</div>
+		<!--end::Card body-->
+	</div>
+	<!--end::Card-->
+</div>
+<!--end::Content container-->
+{% endblock %}
+
+{% block scripts %}
+<script>
+	"use strict";
+
+	// Token kontrolü
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		window.location.href = '/login';
+	}
+
+	// API endpoint
+	const USERS_API = '/api/users';
+	const STAFF_API = '/api/staff';
+
+	// Link to Staff toggle handler
+	const linkToStaffCheckbox = document.getElementById('link_to_staff_checkbox');
+	const staffSelectionFields = document.getElementById('staff_selection_fields');
+	const staffSelect = document.getElementById('staff_select');
+
+	// Load available staff (without panel access)
+	async function loadAvailableStaff() {
+		try {
+			const response = await fetch(STAFF_API, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const staffList = await response.json();
+			
+			// Filter: only staff without user_id (no panel access)
+			const availableStaff = staffList.filter(staff => !staff.user_id);
+			
+			// Clear and populate select
+			if (staffSelect) {
+				// Clear existing options except the first one
+				staffSelect.innerHTML = '<option value="">Select staff member</option>';
+				
+				availableStaff.forEach(staff => {
+					const option = document.createElement('option');
+					option.value = staff.id;
+					option.textContent = `${staff.full_name}${staff.email ? ` (${staff.email})` : ''}`;
+					staffSelect.appendChild(option);
+				});
+				
+				// Reinitialize select2
+				if (typeof $ !== 'undefined' && $.fn.select2) {
+					$(staffSelect).select2({
+						placeholder: "Select staff member"
+					});
+				}
+			}
+		} catch (error) {
+			console.error('Error loading available staff:', error);
+		}
+	}
+
+	if (linkToStaffCheckbox) {
+		linkToStaffCheckbox.addEventListener('change', function() {
+			if (this.checked) {
+				staffSelectionFields.style.display = 'block';
+				staffSelect.required = true;
+				loadAvailableStaff();
+			} else {
+				staffSelectionFields.style.display = 'none';
+				staffSelect.required = false;
+				if (typeof $ !== 'undefined' && $.fn.select2) {
+					$(staffSelect).val('').trigger('change');
+				}
+			}
+		});
+	}
+
+	// Form submit handler
+	document.getElementById('kt_user_create_form')?.addEventListener('submit', async function(e) {
+		e.preventDefault();
+		
+		const form = e.target;
+		const submitButton = document.getElementById('kt_user_create_submit');
+		const indicator = submitButton.querySelector('.indicator-label');
+		const progress = submitButton.querySelector('.indicator-progress');
+		
+		// Show loading state
+		submitButton.disabled = true;
+		indicator.style.display = 'none';
+		progress.style.display = 'inline-block';
+
+		// Get form data
+		const linkToStaff = form.link_to_staff.checked;
+		const formData = {
+			full_name: form.full_name.value.trim(),
+			email: form.email.value.trim(),
+			password: form.password.value,
+			role: form.role.value,
+			link_to_staff_id: linkToStaff && form.link_to_staff_id.value ? parseInt(form.link_to_staff_id.value) : null
+		};
+
+		// Validation
+		if (!formData.full_name) {
+			alert('Full name is required');
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+			return;
+		}
+
+		if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+			alert('Please enter a valid email address');
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+			return;
+		}
+
+		if (!formData.password || formData.password.length < 8) {
+			alert('Password is required and must be at least 8 characters long');
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+			return;
+		}
+
+		if (!formData.role || (formData.role !== 'admin' && formData.role !== 'staff')) {
+			alert('Please select a valid role (admin or staff)');
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+			return;
+		}
+
+		if (linkToStaff && !formData.link_to_staff_id) {
+			alert('Please select a staff member to link');
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+			return;
+		}
+
+		try {
+			const response = await fetch(USERS_API, {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(formData)
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				if (response.status === 403) {
+					Swal.fire({
+						text: "You don't have permission to create users",
+						icon: "error",
+						buttonsStyling: false,
+						confirmButtonText: "Ok",
+						customClass: {
+							confirmButton: "btn btn-primary"
+						}
+					});
+					submitButton.disabled = false;
+					indicator.style.display = 'inline-block';
+					progress.style.display = 'none';
+					return;
+				}
+				const errorData = await response.json();
+				throw new Error(errorData.detail || 'Failed to create user');
+			}
+
+			// Show success message and redirect
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "User created successfully!",
+					icon: "success",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				}).then(() => {
+					window.location.href = '/users';
+				});
+			} else {
+				alert('User created successfully!');
+				window.location.href = '/users';
+			}
+
+		} catch (error) {
+			console.error('Error creating user:', error);
+			Swal.fire({
+				text: error.message || "Error creating user. Please try again.",
+				icon: "error",
+				buttonsStyling: false,
+				confirmButtonText: "Ok",
+				customClass: {
+					confirmButton: "btn btn-primary"
+				}
+			});
+		} finally {
+			// Hide loading state
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+		}
+	});
+</script>
+{% endblock %}
+

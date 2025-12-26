@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--begin::Content container-->
+<div id="kt_app_content_container" class="app-container container-xxl">
+	<!--begin::Card-->
+	<div class="card">
+		<!--begin::Card header-->
+		<div class="card-header border-0 pt-6">
+			<!--begin::Card title-->
+			<div class="card-title">
+				<h2 class="fw-bold">Edit Staff</h2>
+			</div>
+			<!--end::Card title-->
+		</div>
+		<!--end::Card header-->
+		<!--begin::Card body-->
+		<div class="card-body pt-0">
+			<!--begin::Loading-->
+			<div id="staff_loading" class="text-center py-10">
+				<div class="spinner-border text-primary" role="status">
+					<span class="visually-hidden">Loading...</span>
+				</div>
+			</div>
+			<!--end::Loading-->
+			<!--begin::Form-->
+			<form class="form" id="kt_staff_edit_form" style="display: none;">
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-12">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Full Name</label>
+							<input type="text" class="form-control form-control-solid" name="full_name" placeholder="Enter full name" required />
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label">Email</label>
+							<input type="email" class="form-control form-control-solid" name="email" placeholder="Enter email address" />
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label">Phone</label>
+							<input type="tel" class="form-control form-control-solid" name="phone" placeholder="Enter phone number" />
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-12">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-check form-check-custom form-check-solid">
+								<input class="form-check-input" type="checkbox" name="is_active" value="1" />
+								<span class="form-check-label fw-semibold">Active</span>
+							</label>
+							<div class="form-text">Inactive staff cannot be selected when creating appointments</div>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Actions-->
+				<div class="d-flex justify-content-end">
+					<a href="/staff" class="btn btn-light me-3">Cancel</a>
+					<button type="submit" class="btn btn-primary" id="kt_staff_edit_submit">
+						<span class="indicator-label">Update Staff</span>
+						<span class="indicator-progress">Please wait...
+							<span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+						</span>
+					</button>
+				</div>
+				<!--end::Actions-->
+			</form>
+			<!--end::Form-->
+		</div>
+		<!--end::Card body-->
+	</div>
+	<!--end::Card-->
+</div>
+<!--end::Content container-->
+{% endblock %}
+
+{% block scripts %}
+<script>
+	"use strict";
+
+	// Token kontrolü
+	let token = null;
+
+	// Load staff
+	async function loadStaff(staffId) {
+		const STAFF_API = `/api/staff/${staffId}`;
+		try {
+			const response = await fetch(STAFF_API, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				if (response.status === 404) {
+					if (typeof Swal !== 'undefined') {
+						Swal.fire({
+							text: "Staff not found",
+							icon: "error",
+							buttonsStyling: false,
+							confirmButtonText: "Ok",
+							customClass: {
+								confirmButton: "btn btn-primary"
+							}
+						}).then(() => {
+							window.location.href = '/staff';
+						});
+					} else {
+						alert('Staff not found');
+						window.location.href = '/staff';
+					}
+					return;
+				}
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const staff = await response.json();
+			
+			// Hide loading, show form
+			document.getElementById('staff_loading').style.display = 'none';
+			document.getElementById('kt_staff_edit_form').style.display = 'block';
+
+			// Populate form
+			document.querySelector('input[name="full_name"]').value = staff.full_name || '';
+			document.querySelector('input[name="email"]').value = staff.email || '';
+			document.querySelector('input[name="phone"]').value = staff.phone || '';
+			document.querySelector('input[name="is_active"]').checked = staff.is_active || false;
+
+		} catch (error) {
+			console.error('Error loading staff:', error);
+			document.getElementById('staff_loading').style.display = 'none';
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Error loading staff. Please refresh the page.",
+					icon: "error",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				});
+			} else {
+				alert('Error loading staff. Please refresh the page.');
+			}
+		}
+	}
+
+	// Form submit handler
+	function setupFormHandler(staffId) {
+		const STAFF_API = `/api/staff/${staffId}`;
+		document.getElementById('kt_staff_edit_form')?.addEventListener('submit', async function(e) {
+		e.preventDefault();
+		
+		const form = e.target;
+		const submitButton = document.getElementById('kt_staff_edit_submit');
+		const indicator = submitButton.querySelector('.indicator-label');
+		const progress = submitButton.querySelector('.indicator-progress');
+		
+		// Show loading state
+		submitButton.disabled = true;
+		indicator.style.display = 'none';
+		progress.style.display = 'inline-block';
+
+		// Get form data
+		const formData = {
+			full_name: form.full_name.value.trim(),
+			email: form.email.value.trim() || null,
+			phone: form.phone.value.trim() || null,
+			is_active: form.is_active.checked
+		};
+
+		// Validation
+		if (!formData.full_name) {
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Full name is required",
+					icon: "warning",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				});
+			} else {
+				alert('Full name is required');
+			}
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+			return;
+		}
+
+		// Email validation (if provided)
+		if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Please enter a valid email address",
+					icon: "warning",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				});
+			} else {
+				alert('Please enter a valid email address');
+			}
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+			return;
+		}
+
+		try {
+			const response = await fetch(STAFF_API, {
+				method: 'PUT',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(formData)
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				const errorData = await response.json();
+				if (typeof Swal !== 'undefined') {
+					Swal.fire({
+						text: "Error: " + (errorData.detail || 'Failed to update staff'),
+						icon: "error",
+						buttonsStyling: false,
+						confirmButtonText: "Ok",
+						customClass: {
+							confirmButton: "btn btn-primary"
+						}
+					});
+				} else {
+					alert('Error: ' + (errorData.detail || 'Failed to update staff'));
+				}
+				return;
+			}
+
+			// Show success message and redirect
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Staff updated successfully!",
+					icon: "success",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				}).then(() => {
+					window.location.href = '/staff';
+				});
+			} else {
+				alert('Staff updated successfully!');
+				window.location.href = '/staff';
+			}
+
+		} catch (error) {
+			console.error('Error updating staff:', error);
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Error: " + error.message,
+					icon: "error",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				});
+			} else {
+				alert('Error: ' + error.message);
+			}
+		} finally {
+			// Hide loading state
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+		}
+		});
+	}
+
+	// Load data on page load
+	document.addEventListener('DOMContentLoaded', function() {
+		// Token kontrolü
+		token = localStorage.getItem('access_token');
+		if (!token) {
+			window.location.href = '/login';
+			return; // Early exit if no token
+		}
+
+		// Get staff ID from URL
+		// URL format: /staff/{id}/edit
+		const pathParts = window.location.pathname.split('/').filter(part => part);
+		let staffId = null;
+		
+		// Path should be: ['staff', '{id}', 'edit']
+		if (pathParts.length >= 2 && pathParts[0] === 'staff') {
+			staffId = pathParts[1];
+		}
+		
+		if (!staffId || isNaN(staffId)) {
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Invalid staff ID",
+					icon: "error",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				}).then(() => {
+					window.location.href = '/staff';
+				});
+			} else {
+				alert('Invalid staff ID');
+				window.location.href = '/staff';
+			}
+			return; // Early exit if invalid ID
+		}
+
+		// Setup form handler
+		setupFormHandler(staffId);
+		
+		// Load staff data
+		loadStaff(staffId);
+	});
+</script>
+{% endblock %}
+

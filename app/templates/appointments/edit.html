@@ -1,0 +1,2100 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--begin::Content container-->
+<div id="kt_app_content_container" class="app-container container-xxl">
+	<!--begin::Loading-->
+	<div id="appointment_loading" class="text-center py-10">
+		<div class="spinner-border text-primary" role="status">
+			<span class="visually-hidden">Loading...</span>
+		</div>
+	</div>
+	<!--end::Loading-->
+	<!--begin::Form-->
+	<form class="form" id="kt_appointment_edit_form" style="display: none;">
+		<!--begin::Row-->
+		<div class="row">
+			<!--begin::Aside column (Left sidebar)-->
+			<div class="col-lg-4 mb-7 mb-lg-0">
+				<!--begin::Status Card-->
+				<div class="card card-flush py-4">
+					<!--begin::Card header-->
+					<div class="card-header">
+						<div class="card-title">
+							<h2>Status & Notes</h2>
+						</div>
+						<div class="card-toolbar">
+							<div class="rounded-circle bg-success w-15px h-15px" id="kt_ecommerce_add_product_status"></div>
+						</div>
+					</div>
+					<!--end::Card header-->
+					<!--begin::Card body-->
+					<div class="card-body pt-0">
+						<div class="d-flex flex-column gap-10">
+							<!--begin::Status-->
+							<div class="fv-row">
+								<label class="required form-label">Status</label>
+								<input type="text" class="form-control form-control-solid mb-2" id="appointment_status_display" readonly disabled style="background-color: #f5f8fa; cursor: not-allowed;" />
+								<!-- Hidden select for data storage (never submitted) -->
+								<select class="form-select mb-2" data-control="select2" data-hide-search="true" name="status" id="appointment_status" style="display: none;">
+									<option value="scheduled">Scheduled</option>
+									<option value="completed">Completed</option>
+									<option value="cancelled">Cancelled</option>
+									<option value="no_show">No Show</option>
+									<option value="pending">Pending</option>
+									<option value="rejected">Rejected</option>
+								</select>
+							</div>
+							<!--end::Status-->
+							<!--begin::Payment Method-->
+							<div class="fv-row" id="payment_method_row" style="display: none;">
+								<label class="form-label">Payment Method</label>
+								<select class="form-select mb-2" data-control="select2" data-hide-search="true" data-placeholder="Select payment method" data-allow-clear="true" name="payment_method" id="payment_method">
+									<option value=""></option>
+									<option value="cash">Cash</option>
+									<option value="card">Card</option>
+									<option value="online">Online</option>
+								</select>
+								<div class="text-muted fs-7">Select payment method to create transaction</div>
+							</div>
+							<!--end::Payment Method-->
+							<!--begin::Admin Note-->
+							<div class="fv-row">
+								<label class="form-label">Admin Note</label>
+								<textarea class="form-control form-control-solid" name="admin_note" id="admin_note" rows="4" placeholder="Enter admin note"></textarea>
+								<div class="text-muted fs-7">Internal note visible to admins only</div>
+							</div>
+							<!--end::Admin Note-->
+							<!--begin::Staff Note-->
+							<div class="fv-row">
+								<label class="form-label">Staff Note</label>
+								<textarea class="form-control form-control-solid" name="staff_note" id="staff_note" rows="4" placeholder="Enter staff note"></textarea>
+								<div class="text-muted fs-7">Note visible to staff members</div>
+							</div>
+							<!--end::Staff Note-->
+						</div>
+					</div>
+					<!--end::Card body-->
+				</div>
+				<!--end::Status Card-->
+			</div>
+			<!--end::Aside column-->
+			<!--begin::Main column (Right content)-->
+			<div class="col-lg-8">
+				<div class="card card-flush py-4 mb-10">
+					<!--begin::Card header-->
+					<div class="card-header">
+						<div class="card-title">
+							<h3 class="fw-bold">Quick Actions</h3>
+						</div>
+					</div>
+					<!--end::Card header-->
+					<!--begin::Card body-->
+					<div class="card-body pt-0">
+						<!-- Standard Quick Actions (for non-pending statuses) -->
+						<div class="gap-3" id="standard_quick_actions">
+							<button type="button" class="btn btn-success" id="complete_appointment_btn">
+								<i class="ki-duotone ki-check fs-2"></i>Mark as Completed
+							</button>
+							<button type="button" class="btn btn-danger" id="cancel_appointment_btn">
+								<i class="ki-duotone ki-cross fs-2"></i>Cancel Appointment
+							</button>
+						</div>
+						<!-- Pending Quick Actions (Approve/Reject only) -->
+						<div class="gap-3" id="pending_quick_actions" style="display: none;">
+							<button type="button" class="btn btn-success" id="approve_appointment_btn">
+								<i class="ki-duotone ki-check fs-2"></i>Approve
+							</button>
+							<button type="button" class="btn btn-danger" id="reject_appointment_btn">
+								<i class="ki-duotone ki-cross fs-2"></i>Reject
+							</button>
+						</div>
+					</div>
+					<!--end::Card body-->
+				</div>
+				<div class="card card-flush py-4 mb-10">
+					<!--begin::Card header-->
+					<div class="card-header">
+						<div class="card-title">
+							<h2>Appointment Details</h2>
+						</div>
+					</div>
+					<!--end::Card header-->
+					<div class="card-body pt-0">
+						<!--begin::Customer & Staff-->
+						<div class="row mb-10">
+							<!--begin::Col-->
+							<div class="col-lg-6">
+								<!--begin::Input group-->
+								<div class="mb-10">
+									<label class="form-label required">Customer</label>
+									<!-- Readonly input for scheduled (will be shown/hidden dynamically) -->
+									<input type="text" class="form-control form-control-solid" id="customer_select_display" readonly disabled style="background-color: #f5f8fa; cursor: not-allowed; display: none;" />
+									<!-- Select2 for other statuses (will be shown/hidden dynamically) -->
+									<select class="form-select form-select-solid" name="customer_id" id="customer_select" data-control="select2" data-kt-select2="true" required>
+										<!-- Options will be loaded via AJAX -->
+									</select>
+								</div>
+								<!--end::Input group-->
+							</div>
+							<!--end::Col-->
+							<!--begin::Col-->
+							<div class="col-lg-6">
+								<!--begin::Input group-->
+								<div class="mb-10">
+									<label class="form-label required">Staff</label>
+									<select class="form-select form-select-solid" name="staff_id" id="staff_select" data-control="select2" data-kt-select2="true" required>
+										<!-- Options will be loaded via AJAX -->
+									</select>
+								</div>
+								<!--end::Input group-->
+							</div>
+							<!--end::Col-->
+						</div>
+						<!--end::Customer & Staff-->
+						
+						<!--begin::Date & Time-->
+						<div class="row mb-5">
+							<!--begin::Col-->
+							<div class="col-lg-6">
+								<!--begin::Input group-->
+								<div class="mb-10">
+									<label class="form-label required">Date</label>
+									<input type="date" class="form-control form-control-solid" name="appointment_date" id="appointment_date" required />
+								</div>
+								<!--end::Input group-->
+							</div>
+							<!--end::Col-->
+							<!--begin::Col-->
+							<div class="col-lg-6">
+								<!--begin::Input group-->
+								<div class="mb-10">
+									<label class="form-label required">Time</label>
+									<input type="time" class="form-control form-control-solid" name="appointment_time" id="appointment_time" required readonly />
+									<div class="form-text">Select time from available slots above</div>
+								</div>
+								<!--end::Input group-->
+							</div>
+							<!--end::Col-->
+						</div>
+						<!--end::Date & Time-->
+						<!--begin::Available Slots-->
+						<div class="row mb-10" id="available_slots_section" style="display: none;">
+							<!--begin::Col-->
+							<div class="col-lg-12">
+								<!--begin::Card-->
+								<div class="card card-flush">
+									<!--begin::Card header-->
+									<div class="card-header">
+										<div class="card-title">
+											<h3 class="fw-bold">Available Time Slots</h3>
+										</div>
+									</div>
+									<!--end::Card header-->
+									<!--begin::Card body-->
+									<div class="card-body pt-0">
+										<div id="available_slots_container" class="d-flex flex-wrap gap-3">
+											<!-- Available slots will be loaded here -->
+										</div>
+										<div id="available_slots_loading" class="text-center py-5" style="display: none;">
+											<div class="spinner-border text-primary" role="status">
+												<span class="visually-hidden">Loading...</span>
+											</div>
+										</div>
+										<div id="available_slots_empty" class="text-center py-5 text-gray-500" style="display: none;">
+											No available slots for selected date and staff
+										</div>
+									</div>
+									<!--end::Card body-->
+								</div>
+								<!--end::Card-->
+							</div>
+							<!--end::Col-->
+						</div>
+						<!--end::Available Slots-->
+						<!--begin::Services-->
+						<div class="row mb-10">
+							<!--begin::Col-->
+							<div class="col-lg-12">
+								<!--begin::Input group-->
+								<div class="mb-10">
+									<label class="form-label required">Services</label>
+									<select class="form-select mb-2" data-control="select2" data-placeholder="Select services" data-allow-clear="true" name="service_ids" id="service_select" multiple required>
+										<!-- Options will be loaded via JavaScript -->
+									</select>
+									<div class="text-muted fs-7">Add services to this appointment.</div>
+								</div>
+								<!--end::Input group-->
+							</div>
+							<!--end::Col-->
+						</div>
+						<!--end::Services-->
+						<!--begin::Customer Note-->
+						<div class="row">
+							<!--begin::Col-->
+							<div class="col-lg-12">
+								<!--begin::Input group-->
+								<div class="">
+									<label class="form-label">Customer Note</label>
+									<textarea class="form-control form-control-solid" name="customer_note" id="customer_note" rows="3" placeholder="Enter customer note"></textarea>
+									<div class="text-muted fs-7">Note visible to customer</div>
+								</div>
+								<!--end::Input group-->
+							</div>
+							<!--end::Col-->
+						</div>
+						<!--end::Customer Note-->
+					</div>
+				</div>
+
+				<div class="card card-flush py-4 mb-10" id="payment_details_card" style="display: none;">
+					<!--begin::Card header-->
+					<div class="card-header">
+						<div class="card-title">
+							<h2>Payment Details</h2>
+						</div>
+					</div>
+					<!--end::Card header-->
+					<div class="card-body pt-0" id="payment_details_body">
+						<!-- Transaction details will be loaded here -->
+						<div id="payment_details_empty" class="text-center py-5 text-gray-500">
+							No payment details available
+						</div>
+					</div>
+				</div>
+				<!--begin::Actions-->
+				<div class="d-flex justify-content-end">
+					<a href="/appointments" class="btn btn-light me-3">Cancel</a>
+					<a href="#" class="btn btn-light me-3" id="view_appointment_btn">View</a>
+					<button type="submit" class="btn btn-primary" id="kt_appointment_edit_submit">
+						<span class="indicator-label">Update Appointment</span>
+						<span class="indicator-progress">Please wait...
+									<span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+								</span>
+					</button>
+				</div>
+				<!--end::Actions-->
+			</div>
+			<!--end::Main column-->
+		</div>
+		<!--end::Row-->
+	</form>
+	<!--end::Form-->
+</div>
+<!--end::Content container-->
+{% endblock %}
+
+{% block scripts %}
+<script>
+	"use strict";
+
+	// Token kontrolü
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		window.location.href = '/login';
+	}
+
+	// Get appointment ID from URL
+	// URL format: /appointments/{appointment_id}/edit
+	const pathParts = window.location.pathname.split('/').filter(part => part !== '');
+	let appointmentId = null;
+	
+	// Find 'appointments' in path and get the next part as ID
+	const appointmentsIndex = pathParts.indexOf('appointments');
+	if (appointmentsIndex !== -1 && pathParts[appointmentsIndex + 1]) {
+		appointmentId = pathParts[appointmentsIndex + 1];
+	}
+
+	// Validate appointment ID
+	if (!appointmentId || isNaN(appointmentId)) {
+		alert('Invalid appointment ID');
+		window.location.href = '/appointments';
+	} else {
+		// Convert to number
+		appointmentId = parseInt(appointmentId, 10);
+	}
+
+	// Status-based UI rules application
+	function applyStatusBasedUIRules(status, appointment) {
+		const statusDisplay = document.getElementById('appointment_status_display');
+		const statusSelect = document.getElementById('appointment_status');
+		const customerSelect = document.getElementById('customer_select');
+		const customerDisplay = document.getElementById('customer_select_display');
+		const paymentMethodRow = document.getElementById('payment_method_row');
+		const quickActionsCard = document.querySelector('.card:has(#standard_quick_actions)') || document.querySelector('.card:has(#pending_quick_actions)')?.parentElement?.parentElement;
+		const standardQuickActions = document.getElementById('standard_quick_actions');
+		const pendingQuickActions = document.getElementById('pending_quick_actions');
+		const availableSlotsSection = document.getElementById('available_slots_section');
+		
+		// Format status text for display
+		function formatStatusText(status) {
+			const statusMap = {
+				'scheduled': 'Scheduled',
+				'completed': 'Completed',
+				'cancelled': 'Cancelled',
+				'no_show': 'No Show',
+				'pending': 'Pending',
+				'rejected': 'Rejected'
+			};
+			return statusMap[status] || status;
+		}
+		
+		// Always show status as readonly input
+		if (statusDisplay && statusSelect) {
+			statusDisplay.value = formatStatusText(status);
+			statusSelect.value = status;
+			// Destroy Select2 if initialized
+			if (typeof $ !== 'undefined' && $(statusSelect).hasClass('select2-hidden-accessible')) {
+				$(statusSelect).select2('destroy');
+			}
+		}
+		
+		// Handle customer field based on status
+		if (status === 'scheduled') {
+			// SCHEDULED: Show readonly input, hide and destroy Select2 completely
+			if (customerSelect && customerDisplay) {
+				// Get customer name from appointment
+				const customerName = appointment.customer_full_name || 'N/A';
+				customerDisplay.value = customerName;
+				customerDisplay.style.display = 'block';
+				customerSelect.style.display = 'none';
+				// Destroy Select2 if initialized and prevent re-initialization
+				if (typeof $ !== 'undefined' && $(customerSelect).hasClass('select2-hidden-accessible')) {
+					$(customerSelect).select2('destroy');
+				}
+				// Remove Select2 data attributes to prevent auto-initialization
+				if (customerSelect) {
+					customerSelect.removeAttribute('data-control');
+					customerSelect.removeAttribute('data-kt-select2');
+				}
+			}
+		} else {
+			// Show Select2 for other statuses (if editable)
+			if (customerSelect && customerDisplay) {
+				customerDisplay.style.display = 'none';
+				customerSelect.style.display = 'block';
+			}
+		}
+		
+		// Handle payment method visibility (CANCELLED: hide if no payment_method)
+		if (status === 'cancelled') {
+			const hasPaymentMethod = appointment.transaction && appointment.transaction.payment_method;
+			if (paymentMethodRow) {
+				paymentMethodRow.style.display = hasPaymentMethod ? 'block' : 'none';
+			}
+		}
+		
+		// Handle Quick Actions visibility
+		// Find the Quick Actions card parent
+		const quickActionsCardParent = standardQuickActions?.closest('.card') || pendingQuickActions?.closest('.card');
+		
+		if (status === 'pending') {
+			// PENDING: Show only Approve/Reject buttons, hide standard buttons
+			if (standardQuickActions) {
+				standardQuickActions.style.display = 'none';
+			}
+			if (pendingQuickActions) {
+				pendingQuickActions.style.display = 'flex';
+			}
+			if (quickActionsCardParent) {
+				quickActionsCardParent.style.display = 'block';
+			}
+		} else if (status === 'scheduled') {
+			// SCHEDULED: Show only Mark as Completed and Cancel Appointment, hide approve/reject
+			if (standardQuickActions) {
+				standardQuickActions.style.display = 'flex';
+			}
+			if (pendingQuickActions) {
+				pendingQuickActions.style.display = 'none';
+			}
+			if (quickActionsCardParent) {
+				quickActionsCardParent.style.display = 'block';
+			}
+		} else if (status === 'cancelled' || status === 'completed' || status === 'rejected') {
+			// CANCELLED/COMPLETED/REJECTED: Hide Quick Actions completely
+			if (quickActionsCardParent) {
+				quickActionsCardParent.style.display = 'none';
+			}
+		} else {
+			// OTHER STATUSES (no_show, etc.): Show standard Quick Actions
+			if (standardQuickActions) {
+				standardQuickActions.style.display = 'flex';
+			}
+			if (pendingQuickActions) {
+				pendingQuickActions.style.display = 'none';
+			}
+			if (quickActionsCardParent) {
+				quickActionsCardParent.style.display = 'block';
+			}
+		}
+		
+		// Handle Available Time Slots (COMPLETED: hide and prevent API calls)
+		if (status === 'completed') {
+			if (availableSlotsSection) {
+				availableSlotsSection.style.display = 'none';
+			}
+		} else if (status === 'scheduled') {
+			// Show available slots section (will be populated by loadAvailableSlots)
+			// Don't force display here, let loadAvailableSlots handle it
+		} else {
+			// Hide for other statuses
+			if (availableSlotsSection) {
+				availableSlotsSection.style.display = 'none';
+			}
+		}
+		
+		// Disable/readonly fields based on status
+		const fieldsToDisable = [];
+		if (status === 'pending' || status === 'rejected') {
+			// Only admin_note and staff_note are editable
+			fieldsToDisable.push('customer_select', 'customer_select_display', 'staff_select', 
+				'appointment_date', 'appointment_time', 'service_select', 'customer_note');
+		} else if (status === 'cancelled' || status === 'completed') {
+			// All fields except admin_note and staff_note
+			fieldsToDisable.push('customer_select', 'customer_select_display', 'staff_select', 
+				'appointment_date', 'appointment_time', 'service_select', 'customer_note');
+		} else if (status === 'scheduled') {
+			// Customer is readonly (already handled above)
+			fieldsToDisable.push('customer_select_display');
+		}
+		
+		fieldsToDisable.forEach(fieldId => {
+			const field = document.getElementById(fieldId);
+			if (field) {
+				field.disabled = true;
+				field.readOnly = true;
+				if (typeof $ !== 'undefined' && $(field).hasClass('select2-hidden-accessible')) {
+					$(field).prop('disabled', true).trigger('change');
+				}
+			}
+		});
+	}
+
+	// Build update payload based on status (whitelist approach)
+	function buildUpdatePayloadByStatus(status, formState, appointment) {
+		const payload = {};
+		
+		// Always exclude status from payload
+		// Never send status in update from edit page
+		
+		if (status === 'pending' || status === 'rejected') {
+			// Only admin_note and staff_note
+			if (formState.admin_note !== undefined) {
+				payload.admin_note = formState.admin_note || null;
+			}
+			if (formState.staff_note !== undefined) {
+				payload.staff_note = formState.staff_note || null;
+			}
+		} else if (status === 'scheduled') {
+			// Exclude customer_id, include other fields
+			if (formState.staff_id !== undefined) {
+				payload.staff_id = formState.staff_id;
+			}
+			if (formState.appointment_date !== undefined) {
+				payload.appointment_date = formState.appointment_date;
+			}
+			if (formState.service_ids !== undefined) {
+				payload.service_ids = formState.service_ids;
+			}
+			if (formState.admin_note !== undefined) {
+				payload.admin_note = formState.admin_note || null;
+			}
+			if (formState.staff_note !== undefined) {
+				payload.staff_note = formState.staff_note || null;
+			}
+			if (formState.customer_note !== undefined) {
+				payload.customer_note = formState.customer_note || null;
+			}
+			// customer_id is explicitly NOT included
+		} else if (status === 'cancelled' || status === 'completed') {
+			// Only admin_note and staff_note (same as pending/rejected)
+			if (formState.admin_note !== undefined) {
+				payload.admin_note = formState.admin_note || null;
+			}
+			if (formState.staff_note !== undefined) {
+				payload.staff_note = formState.staff_note || null;
+			}
+		} else {
+			// For other statuses (no_show, etc.), allow standard fields except status
+			if (formState.customer_id !== undefined) {
+				payload.customer_id = formState.customer_id;
+			}
+			if (formState.staff_id !== undefined) {
+				payload.staff_id = formState.staff_id;
+			}
+			if (formState.appointment_date !== undefined) {
+				payload.appointment_date = formState.appointment_date;
+			}
+			if (formState.service_ids !== undefined) {
+				payload.service_ids = formState.service_ids;
+			}
+			if (formState.admin_note !== undefined) {
+				payload.admin_note = formState.admin_note || null;
+			}
+			if (formState.staff_note !== undefined) {
+				payload.staff_note = formState.staff_note || null;
+			}
+			if (formState.customer_note !== undefined) {
+				payload.customer_note = formState.customer_note || null;
+			}
+		}
+		
+		return payload;
+	}
+
+		// API base URLs
+		const CUSTOMERS_API = '/api/customers';
+		const STAFF_API = '/api/staff';
+		const SERVICES_API = '/api/services';
+		const APPOINTMENTS_API = `/api/appointments/${appointmentId}`;
+		const APPOINTMENT_STATUS_API = `/api/appointments/${appointmentId}/status`;
+		const TRANSACTIONS_API = '/api/transactions';
+
+		// State
+		let customers = [];
+		let staffList = [];
+		let services = [];
+		let appointment = null;
+
+	// Initialize Select2 with AJAX remote search for Customer
+	function initCustomerSelect2(selectedCustomerId = null, selectedCustomerName = null) {
+		const $customerSelect = $('#customer_select');
+		
+		// Destroy existing Select2 if any
+		if ($customerSelect.hasClass('select2-hidden-accessible')) {
+			$customerSelect.select2('destroy');
+		}
+		
+		// Clear and set initial option if we have a selected customer
+		$customerSelect.empty();
+		if (selectedCustomerId && selectedCustomerName) {
+			$customerSelect.append(new Option(selectedCustomerName, selectedCustomerId, true, true));
+		}
+		
+		$customerSelect.select2({
+			placeholder: 'Search for a customer...',
+			minimumInputLength: 1,
+			ajax: {
+				url: CUSTOMERS_API,
+				dataType: 'json',
+				delay: 250,
+				data: function (params) {
+					return {
+						search: params.term // search term
+					};
+				},
+				processResults: function (data) {
+					return {
+						results: data.map(function(customer) {
+							return {
+								id: customer.id,
+								text: `${customer.full_name} (${customer.email})`
+							};
+						})
+					};
+				},
+				cache: true,
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			}
+		});
+	}
+
+	// Initialize Select2 with AJAX remote search for Staff
+	function initStaffSelect2(selectedStaffId = null, selectedStaffName = null) {
+		const $staffSelect = $('#staff_select');
+		
+		// Destroy existing Select2 if any
+		if ($staffSelect.hasClass('select2-hidden-accessible')) {
+			$staffSelect.select2('destroy');
+		}
+		
+		// Clear and set initial option if we have a selected staff
+		$staffSelect.empty();
+		if (selectedStaffId && selectedStaffName) {
+			$staffSelect.append(new Option(selectedStaffName, selectedStaffId, true, true));
+		}
+		
+		$staffSelect.select2({
+			placeholder: 'Search for a staff member...',
+			minimumInputLength: 1,
+			ajax: {
+				url: STAFF_API,
+				dataType: 'json',
+				delay: 250,
+				data: function (params) {
+					return {
+						search: params.term // search term
+					};
+				},
+				processResults: function (data) {
+					return {
+						results: data.filter(function(staff) {
+							return staff.is_active;
+						}).map(function(staff) {
+							return {
+								id: staff.id,
+								text: staff.full_name
+							};
+						})
+					};
+				},
+				cache: true,
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			}
+		});
+	}
+
+	// Load services
+	async function loadServices() {
+		try {
+			const response = await fetch(SERVICES_API, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			services = await response.json();
+			const select = document.getElementById('service_select');
+			
+			// Clear existing options
+			select.innerHTML = '';
+			
+			// Add services (only active)
+			services.filter(s => s.is_active).forEach(service => {
+				const option = document.createElement('option');
+				option.value = service.id;
+				option.textContent = `${service.name} (${service.duration_minutes} min - $${parseFloat(service.price).toFixed(2)})`;
+				select.appendChild(option);
+			});
+			
+			// Initialize Select2 for services if not already initialized
+			if (typeof $ !== 'undefined' && $.fn.select2) {
+				if (!$(select).hasClass('select2-hidden-accessible')) {
+					$(select).select2({
+						placeholder: 'Select services',
+						allowClear: true
+					});
+				}
+			}
+		} catch (error) {
+			console.error('Error loading services:', error);
+			alert('Error loading services. Please refresh the page.');
+		}
+	}
+
+	// Load appointment
+	async function loadAppointment() {
+		try {
+			const response = await fetch(`${APPOINTMENTS_API}?include_services=true`, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				if (response.status === 404) {
+					alert('Appointment not found');
+					window.location.href = '/appointments';
+					return;
+				}
+				const errorText = await response.text();
+				console.error('Error response:', errorText);
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			appointment = await response.json();
+			
+			// Apply status-based UI rules BEFORE populating form fields
+			applyStatusBasedUIRules(appointment.status, appointment);
+			
+			// Wait for services to be loaded
+			let retries = 0;
+			while (services.length === 0 && retries < 10) {
+				await new Promise(resolve => setTimeout(resolve, 100));
+				retries++;
+			}
+			
+			// Hide loading, show form
+			document.getElementById('appointment_loading').style.display = 'none';
+			document.getElementById('kt_appointment_edit_form').style.display = 'block';
+
+			// Get customer and staff names for Select2 initialization
+			let customerName = null;
+			let staffName = null;
+			
+			// Fetch customer name if customer_id exists
+			if (appointment.customer_id) {
+				try {
+					const customerResponse = await fetch(`${CUSTOMERS_API}/${appointment.customer_id}`, {
+						headers: {
+							'Authorization': `Bearer ${token}`,
+							'Content-Type': 'application/json'
+						}
+					});
+					if (customerResponse.ok) {
+						const customer = await customerResponse.json();
+						customerName = `${customer.full_name} (${customer.email})`;
+					}
+				} catch (e) {
+					console.error('Error fetching customer:', e);
+				}
+			}
+			
+			// Fetch staff name if staff_id exists
+			if (appointment.staff_id) {
+				try {
+					const staffResponse = await fetch(`${STAFF_API}/${appointment.staff_id}`, {
+						headers: {
+							'Authorization': `Bearer ${token}`,
+							'Content-Type': 'application/json'
+						}
+					});
+					if (staffResponse.ok) {
+						const staff = await staffResponse.json();
+						staffName = staff.full_name;
+					}
+				} catch (e) {
+					console.error('Error fetching staff:', e);
+				}
+			}
+			
+			// Initialize Select2 with selected values
+			// For scheduled appointments, customer is readonly (no Select2 needed)
+			// applyStatusBasedUIRules already handles showing readonly input for scheduled
+			if (appointment.status !== 'scheduled') {
+				initCustomerSelect2(appointment.customer_id, customerName);
+			}
+			initStaffSelect2(appointment.staff_id, staffName);
+			
+			// Date and time
+			const appointmentDate = new Date(appointment.appointment_date);
+			const dateStr = appointmentDate.toISOString().split('T')[0];
+			const timeStr = appointmentDate.toTimeString().split(' ')[0].substring(0, 5);
+			
+			const dateInput = document.getElementById('appointment_date');
+			if (dateInput) {
+				dateInput.value = dateStr;
+			}
+			
+			const timeInput = document.getElementById('appointment_time');
+			if (timeInput) {
+				timeInput.value = timeStr;
+			}
+			
+			// Services - wait for services to be loaded and set selected values
+			if (appointment.services && appointment.services.length > 0) {
+				const serviceSelect = document.getElementById('service_select');
+				if (serviceSelect) {
+					// Wait a bit more for services to be populated and Select2 initialized
+					await new Promise(resolve => setTimeout(resolve, 300));
+					
+					// Get selected service IDs
+					const selectedServiceIds = appointment.services.map(service => service.service_id.toString());
+					
+					// Set selected values
+					if (typeof $ !== 'undefined' && $(serviceSelect).hasClass('select2-hidden-accessible')) {
+						// Select2 is initialized, use Select2 method
+						$(serviceSelect).val(selectedServiceIds).trigger('change');
+					} else {
+						// Select2 not initialized yet, set directly
+						appointment.services.forEach(service => {
+							const option = serviceSelect.querySelector(`option[value="${service.service_id}"]`);
+							if (option) {
+								option.selected = true;
+							}
+						});
+					}
+				}
+			}
+			
+			// Status is now handled by applyStatusBasedUIRules (readonly input)
+			
+			// Admin Note
+			const adminNoteTextarea = document.getElementById('admin_note');
+			if (adminNoteTextarea) {
+				adminNoteTextarea.value = appointment.admin_note || '';
+			}
+			
+			// Staff Note
+			const staffNoteTextarea = document.getElementById('staff_note');
+			if (staffNoteTextarea) {
+				staffNoteTextarea.value = appointment.staff_note || '';
+			}
+			
+			// Customer Note
+			const customerNoteTextarea = document.getElementById('customer_note');
+			if (customerNoteTextarea) {
+				customerNoteTextarea.value = appointment.customer_note || '';
+			}
+			
+			// Load payment details (transaction)
+			loadPaymentDetails(appointment.transaction);
+			
+			// Update status circle color
+			updateStatusCircleColor(appointment.status || 'scheduled');
+			
+			// View button
+			const viewBtn = document.getElementById('view_appointment_btn');
+			if (viewBtn) {
+				viewBtn.href = `/appointments/${appointmentId}`;
+			}
+			
+			// Load available slots if status is scheduled (and not completed)
+			// applyStatusBasedUIRules already handles hiding for completed
+			if (appointment.status === 'scheduled') {
+				// Wait a bit for form to be ready and services to be populated
+				await new Promise(resolve => setTimeout(resolve, 500));
+				
+				// Get service IDs from appointment.services if available
+				let serviceIdsForSlots = null;
+				if (appointment.services && appointment.services.length > 0) {
+					serviceIdsForSlots = appointment.services.map(service => service.service_id);
+				}
+				
+				// Load available slots with service IDs from appointment
+				loadAvailableSlots(serviceIdsForSlots);
+			}
+			
+			// Store original appointment date/time
+			window.originalAppointmentDate = appointment.appointment_date;
+
+		} catch (error) {
+			console.error('Error loading appointment:', error);
+			document.getElementById('appointment_loading').style.display = 'none';
+			alert('Error loading appointment: ' + error.message);
+		}
+	}
+
+		// Load payment details (transaction)
+		function loadPaymentDetails(transaction) {
+			const paymentCard = document.getElementById('payment_details_card');
+			const paymentBody = document.getElementById('payment_details_body');
+			const paymentEmpty = document.getElementById('payment_details_empty');
+			const paymentMethodRow = document.getElementById('payment_method_row');
+			
+			if (!paymentCard || !paymentBody || !paymentEmpty) return;
+			
+			// Get current appointment status
+			const currentStatus = appointment ? appointment.status : '';
+			
+			if (transaction) {
+				// Show payment details card
+				paymentCard.style.display = 'block';
+				// Hide payment method select (transaction already exists)
+				if (paymentMethodRow) {
+					paymentMethodRow.style.display = 'none';
+				}
+				// Hide empty message
+				paymentEmpty.style.display = 'none';
+				
+				// Format payment method
+				const paymentMethodMap = {
+					'cash': 'Cash',
+					'card': 'Card',
+					'online': 'Online'
+				};
+				const paymentMethod = paymentMethodMap[transaction.payment_method] || transaction.payment_method;
+				
+				// Format status
+				const statusMap = {
+					'pending': 'Pending',
+					'completed': 'Completed',
+					'refunded': 'Refunded'
+				};
+				const status = statusMap[transaction.status] || transaction.status;
+				
+				// Format date
+				let transactionDate = 'N/A';
+				if (transaction.transaction_date) {
+					const date = new Date(transaction.transaction_date);
+					transactionDate = date.toLocaleString('en-US', {
+						year: 'numeric',
+						month: 'short',
+						day: 'numeric',
+						hour: '2-digit',
+						minute: '2-digit'
+					});
+				}
+				
+				// Create payment details HTML
+				const statusBadgeClass = transaction.status === 'completed' ? 'success' : transaction.status === 'pending' ? 'warning' : 'danger';
+				const showMarkCompletedBtn = transaction.status === 'pending';
+				
+				paymentBody.innerHTML = `
+					<div class="d-flex flex-column gap-5">
+						<div class="d-flex justify-content-between align-items-center">
+							<span class="text-gray-600 fw-semibold">Amount:</span>
+							<span class="text-gray-800 fw-bold">$${parseFloat(transaction.amount).toFixed(2)}</span>
+						</div>
+						<div class="d-flex justify-content-between align-items-center">
+							<span class="text-gray-600 fw-semibold">Payment Method:</span>
+							<span class="text-gray-800">${paymentMethod}</span>
+						</div>
+						<div class="d-flex justify-content-between align-items-center">
+							<span class="text-gray-600 fw-semibold">Status:</span>
+							<div class="d-flex align-items-center gap-2">
+								<span class="badge badge-light-${statusBadgeClass}">${status}</span>
+								${showMarkCompletedBtn ? `
+									<button type="button" class="btn btn-sm btn-primary" id="mark_transaction_completed_btn" data-transaction-id="${transaction.id}">
+										Mark as Completed
+									</button>
+								` : ''}
+							</div>
+						</div>
+						<div class="d-flex justify-content-between align-items-center">
+							<span class="text-gray-600 fw-semibold">Transaction Date:</span>
+							<span class="text-gray-800">${transactionDate}</span>
+						</div>
+					</div>
+				`;
+				
+				// Add event listener for "Mark as Completed" button
+				if (showMarkCompletedBtn) {
+					const markCompletedBtn = document.getElementById('mark_transaction_completed_btn');
+					if (markCompletedBtn) {
+						markCompletedBtn.addEventListener('click', async function() {
+							await updateTransactionStatus(transaction.id, 'completed');
+						});
+					}
+				}
+			} else {
+				// Hide payment details card
+				paymentCard.style.display = 'none';
+				// Show payment method select only if status is NOT cancelled
+				// For cancelled appointments without payment method, don't show the select
+				if (paymentMethodRow) {
+					if (currentStatus === 'cancelled') {
+						// Cancelled appointment without payment method: hide payment method select
+						paymentMethodRow.style.display = 'none';
+					} else {
+						// Other statuses: show payment method select (no transaction exists)
+						paymentMethodRow.style.display = 'block';
+					}
+				}
+				// Clear payment body
+				paymentBody.innerHTML = '';
+				paymentEmpty.style.display = 'block';
+			}
+		}
+
+		// Update transaction status
+		async function updateTransactionStatus(transactionId, newStatus) {
+			try {
+				console.log(`Updating transaction ${transactionId} status to ${newStatus}`);
+				
+				const updateData = {
+					status: newStatus
+				};
+				
+				const response = await fetch(`${TRANSACTIONS_API}/${transactionId}`, {
+					method: 'PUT',
+					headers: {
+						'Authorization': `Bearer ${token}`,
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(updateData)
+				});
+				
+				if (!response.ok) {
+					const errorData = await response.json();
+					throw new Error(errorData.detail || 'Failed to update transaction status');
+				}
+				
+				const updatedTransaction = await response.json();
+				console.log('Transaction status updated successfully:', updatedTransaction);
+				
+				// Refresh appointment to get updated transaction
+				const refreshResponse = await fetch(`${APPOINTMENTS_API}?include_services=true`, {
+					headers: {
+						'Authorization': `Bearer ${token}`,
+						'Content-Type': 'application/json'
+					}
+				});
+				
+				if (refreshResponse.ok) {
+					appointment = await refreshResponse.json();
+					
+					// Show success message with Swal and reload page
+					if (typeof Swal !== 'undefined') {
+						Swal.fire({
+							text: "Transaction status updated successfully!",
+							icon: "success",
+							buttonsStyling: false,
+							confirmButtonText: "Ok",
+							customClass: {
+								confirmButton: "btn btn-primary"
+							}
+						}).then(() => {
+							window.location.reload();
+						});
+					} else {
+						alert('Transaction status updated successfully!');
+						window.location.reload();
+					}
+				} else {
+					console.warn('Failed to refresh appointment after transaction status update');
+					throw new Error('Failed to refresh appointment');
+				}
+			} catch (error) {
+				console.error('Error updating transaction status:', error);
+				if (typeof toastr !== 'undefined') {
+					toastr.error('Error updating transaction status: ' + error.message, 'Error', {
+						timeOut: 5000,
+						closeButton: true,
+						progressBar: true
+					});
+				} else if (typeof Swal !== 'undefined') {
+					Swal.fire({
+						text: 'Error: ' + error.message,
+						icon: 'error',
+						buttonsStyling: false,
+						confirmButtonText: 'Ok',
+						customClass: {
+							confirmButton: 'btn btn-primary'
+						}
+					});
+				} else {
+					alert('Error: ' + error.message);
+				}
+			}
+		}
+
+		// Update status circle color based on status
+		function updateStatusCircleColor(status) {
+			const statusCircle = document.getElementById('kt_ecommerce_add_product_status');
+			if (!statusCircle) return;
+			
+			// Remove all color classes
+			statusCircle.classList.remove('bg-success', 'bg-warning', 'bg-primary', 'bg-danger', 'bg-info');
+			
+			// Add appropriate color class based on status
+			switch(status) {
+				case 'scheduled':
+					statusCircle.classList.add('bg-primary');
+					break;
+				case 'completed':
+					statusCircle.classList.add('bg-success');
+					break;
+				case 'cancelled':
+					statusCircle.classList.add('bg-danger');
+					break;
+				case 'no_show':
+					statusCircle.classList.add('bg-info');
+					break;
+				default:
+					statusCircle.classList.add('bg-primary');
+			}
+		}
+
+		// Load available slots (same as create page)
+		async function loadAvailableSlots(serviceIdsOverride = null) {
+		// Check if status allows showing available slots (COMPLETED: never call API)
+		const currentStatus = appointment ? appointment.status : '';
+		
+		// Never load slots for completed status
+		if (currentStatus === 'completed') {
+			const availableSlotsSection = document.getElementById('available_slots_section');
+			if (availableSlotsSection) {
+				availableSlotsSection.style.display = 'none';
+			}
+			return;
+		}
+		
+		// Only load for scheduled
+		if (currentStatus !== 'scheduled') {
+			document.getElementById('available_slots_section').style.display = 'none';
+			return;
+		}
+		
+		const staffId = document.getElementById('staff_select').value;
+		const date = document.getElementById('appointment_date').value;
+		
+		if (!staffId || !date) {
+			document.getElementById('available_slots_section').style.display = 'none';
+			return;
+		}
+		
+		// Get selected services - use override if provided, otherwise read from select
+		let selectedServices = [];
+		
+		if (serviceIdsOverride && Array.isArray(serviceIdsOverride)) {
+			// Use provided service IDs (e.g., from appointment.services)
+			selectedServices = serviceIdsOverride.map(id => parseInt(id)).filter(id => !isNaN(id));
+		} else {
+			// Read from service_select element
+			const serviceSelect = document.getElementById('service_select');
+			if (serviceSelect) {
+				if (typeof $ !== 'undefined' && $(serviceSelect).hasClass('select2-hidden-accessible')) {
+					selectedServices = $(serviceSelect).val() || [];
+					selectedServices = selectedServices.map(id => parseInt(id)).filter(id => !isNaN(id));
+				} else {
+					selectedServices = Array.from(serviceSelect.selectedOptions).map(opt => parseInt(opt.value)).filter(id => !isNaN(id));
+				}
+			}
+		}
+
+		// Show loading
+		document.getElementById('available_slots_section').style.display = 'block';
+		document.getElementById('available_slots_loading').style.display = 'block';
+		document.getElementById('available_slots_container').innerHTML = '';
+		document.getElementById('available_slots_empty').style.display = 'none';
+
+		try {
+			// Build query params
+			let url = `/api/appointments/available-slots?staff_id=${staffId}&date=${date}`;
+			if (selectedServices.length > 0) {
+				// FastAPI List[int] query parameter format: service_ids=1&service_ids=2
+				selectedServices.forEach(serviceId => {
+					url += `&service_ids=${serviceId}`;
+				});
+			}
+
+			const response = await fetch(url, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				
+				// Try to get error detail from response
+				let errorMessage = `HTTP error! status: ${response.status}`;
+				try {
+					const errorData = await response.json();
+					if (errorData.detail) {
+						errorMessage = errorData.detail;
+					}
+				} catch (e) {
+					// If JSON parse fails, try text
+					try {
+						const errorText = await response.text();
+						if (errorText) {
+							errorMessage = errorText;
+						}
+					} catch (e2) {
+						// Ignore text parse errors
+					}
+				}
+				
+				const error = new Error(errorMessage);
+				throw error;
+			}
+
+			const result = await response.json();
+			const availableSlots = result.available_slots || [];
+
+			// Hide loading
+			document.getElementById('available_slots_loading').style.display = 'none';
+
+			if (availableSlots.length === 0) {
+				document.getElementById('available_slots_empty').style.display = 'block';
+				return;
+			}
+
+			// Display available slots
+			const container = document.getElementById('available_slots_container');
+			container.innerHTML = '';
+
+			availableSlots.forEach(slot => {
+				const slotDate = new Date(slot);
+				const timeStr = slotDate.toLocaleTimeString('en-US', {
+					hour: '2-digit',
+					minute: '2-digit',
+					hour12: false
+				});
+
+				const button = document.createElement('button');
+				button.type = 'button';
+				button.className = 'btn btn-light-primary btn-sm slot-button';
+				button.textContent = timeStr;
+				button.dataset.slot = slot;
+				button.addEventListener('click', function() {
+					// Remove active class from all buttons
+					document.querySelectorAll('.slot-button').forEach(btn => {
+						btn.classList.remove('btn-primary');
+						btn.classList.add('btn-light-primary');
+					});
+					// Add active class to clicked button
+					this.classList.remove('btn-light-primary');
+					this.classList.add('btn-primary');
+					// Set time input
+					document.getElementById('appointment_time').value = timeStr;
+				});
+
+				container.appendChild(button);
+			});
+
+		} catch (error) {
+			console.error('Error loading available slots:', error);
+			document.getElementById('available_slots_loading').style.display = 'none';
+			document.getElementById('available_slots_empty').style.display = 'block';
+			
+			// Show the API error detail in the empty message
+			const errorMessage = error.message || 'Error loading available slots';
+			document.getElementById('available_slots_empty').textContent = `Error: ${errorMessage}`;
+		}
+	}
+
+
+		// Event listeners
+		document.getElementById('staff_select')?.addEventListener('change', function() {
+		// Only load available slots if status allows
+		const statusSelect = document.getElementById('appointment_status');
+		const currentStatus = statusSelect ? statusSelect.value : '';
+		if (currentStatus === 'scheduled' && 
+			this.value && document.getElementById('appointment_date').value) {
+			loadAvailableSlots();
+		}
+	});
+
+	document.getElementById('appointment_date')?.addEventListener('change', function() {
+		// Set minimum date to today
+		const today = new Date().toISOString().split('T')[0];
+		if (this.value < today) {
+			alert('Please select a future date');
+			this.value = today;
+			return;
+		}
+		if (this.value && document.getElementById('staff_select').value) {
+			loadAvailableSlots();
+		}
+		// Check if date changed and update status
+	});
+
+	document.getElementById('appointment_time')?.addEventListener('change', function() {
+		// Check if time changed and update status
+	});
+
+	// Service select change listener - reload available slots when services change (duration affects slots)
+	// Use jQuery for Select2 change event (Select2 may not trigger native change events properly)
+	const serviceSelect = document.getElementById('service_select');
+	if (serviceSelect) {
+		if (typeof $ !== 'undefined') {
+			$(serviceSelect).on('change', function() {
+				// Reload available slots when services change (duration affects slots)
+				// Only if status allows and required fields are filled
+				const statusSelect = document.getElementById('appointment_status');
+				const currentStatus = statusSelect ? statusSelect.value : '';
+				const staffSelect = document.getElementById('staff_select');
+				const dateInput = document.getElementById('appointment_date');
+				
+				if (currentStatus === 'scheduled' && 
+					staffSelect && staffSelect.value && 
+					dateInput && dateInput.value) {
+					loadAvailableSlots();
+				}
+			});
+		} else {
+			serviceSelect.addEventListener('change', function() {
+				// Reload available slots when services change (duration affects slots)
+				// Only if status allows and required fields are filled
+				const statusSelect = document.getElementById('appointment_status');
+				const currentStatus = statusSelect ? statusSelect.value : '';
+				const staffSelect = document.getElementById('staff_select');
+				const dateInput = document.getElementById('appointment_date');
+				
+				if (currentStatus === 'scheduled' && 
+					staffSelect && staffSelect.value && 
+					dateInput && dateInput.value) {
+					loadAvailableSlots();
+				}
+			});
+		}
+	}
+	
+	// Status is now readonly, so no change listener needed
+	// Status circle color is updated by applyStatusBasedUIRules
+
+
+		// Form submit handler
+		document.getElementById('kt_appointment_edit_form')?.addEventListener('submit', async function(e) {
+		e.preventDefault();
+		
+		const form = e.target;
+		const submitButton = document.getElementById('kt_appointment_edit_submit');
+		const indicator = submitButton.querySelector('.indicator-label');
+		const progress = submitButton.querySelector('.indicator-progress');
+		
+		// Show loading state
+		submitButton.disabled = true;
+		indicator.style.display = 'none';
+		progress.style.display = 'inline-block';
+
+		// Get selected services (works with both Select2 and regular select)
+		const serviceSelect = document.getElementById('service_select');
+		let selectedServices = [];
+		
+		if (typeof $ !== 'undefined' && $(serviceSelect).hasClass('select2-hidden-accessible')) {
+			// Select2 is initialized, use Select2 method
+			selectedServices = $(serviceSelect).val() || [];
+			selectedServices = selectedServices.map(id => parseInt(id));
+		} else {
+			// Regular select
+			selectedServices = Array.from(serviceSelect.selectedOptions).map(opt => parseInt(opt.value));
+		}
+
+		if (selectedServices.length === 0) {
+			alert('Please select at least one service');
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+			return;
+		}
+
+		// Combine date and time
+		const date = form.appointment_date.value;
+		const time = form.appointment_time.value;
+		const appointmentDateTime = `${date}T${time}:00`;
+
+		
+		// Get admin_note, staff_note, and customer_note, convert empty strings to null
+		const adminNote = form.admin_note.value.trim();
+		const staffNote = form.staff_note.value.trim();
+		const customerNote = form.customer_note ? form.customer_note.value.trim() : '';
+		
+		// Get current appointment status (never send status in update)
+		const currentStatus = appointment ? appointment.status : 'scheduled';
+		
+		// Get payment method if selected
+		const paymentMethodSelect = document.getElementById('payment_method');
+		let paymentMethod = null;
+		if (paymentMethodSelect) {
+			if (typeof $ !== 'undefined' && $(paymentMethodSelect).hasClass('select2-hidden-accessible')) {
+				paymentMethod = $(paymentMethodSelect).val() || null;
+			} else {
+				paymentMethod = paymentMethodSelect.value || null;
+			}
+		}
+
+		try {
+			// If payment method is selected and transaction exists, update transaction payment method
+			if (paymentMethod && appointment && appointment.transaction) {
+				// Check if payment method has changed
+				if (appointment.transaction.payment_method !== paymentMethod) {
+					console.log('Updating transaction payment method:', paymentMethod);
+					const updateTransactionData = {
+						payment_method: paymentMethod
+					};
+					
+					const updateTransactionResponse = await fetch(`${TRANSACTIONS_API}/${appointment.transaction.id}`, {
+						method: 'PUT',
+						headers: {
+							'Authorization': `Bearer ${token}`,
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify(updateTransactionData)
+					});
+					
+					if (!updateTransactionResponse.ok) {
+						const errorData = await updateTransactionResponse.json();
+						throw new Error(errorData.detail || 'Failed to update transaction payment method');
+					}
+					
+					// Transaction updated successfully, refresh appointment to get the updated transaction
+					const refreshResponse = await fetch(`${APPOINTMENTS_API}?include_services=true`, {
+						headers: {
+							'Authorization': `Bearer ${token}`,
+							'Content-Type': 'application/json'
+						}
+					});
+					if (refreshResponse.ok) {
+						appointment = await refreshResponse.json();
+					}
+				}
+			} else if (paymentMethod && appointment && !appointment.transaction) {
+				// Payment method selected but transaction doesn't exist yet
+				// This should have been created by the change event, but if not, create it here
+				console.log('Payment method selected but transaction missing, creating now...');
+				let totalAmount = 0;
+				if (appointment.services && appointment.services.length > 0) {
+					appointment.services.forEach(service => {
+						if (service.price) {
+							totalAmount += parseFloat(service.price);
+						}
+					});
+				} else {
+					if (services && services.length > 0) {
+						selectedServices.forEach(serviceId => {
+							const service = services.find(s => s.id === serviceId);
+							if (service && service.price) {
+								totalAmount += parseFloat(service.price);
+							}
+						});
+					}
+				}
+				
+				if (totalAmount > 0) {
+					// Get customer_id from appointment (form field may be readonly)
+					const customerIdForTransaction = appointment ? appointment.customer_id : parseInt(form.customer_id?.value || 0);
+					
+					const transactionData = {
+						appointment_id: appointmentId,
+						customer_id: customerIdForTransaction,
+						amount: totalAmount.toFixed(2),
+						payment_method: paymentMethod,
+						status: 'pending'
+					};
+					
+					const transactionResponse = await fetch(TRANSACTIONS_API, {
+						method: 'POST',
+						headers: {
+							'Authorization': `Bearer ${token}`,
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify(transactionData)
+					});
+					
+					if (transactionResponse.ok) {
+						const refreshResponse = await fetch(`${APPOINTMENTS_API}?include_services=true`, {
+							headers: {
+								'Authorization': `Bearer ${token}`,
+								'Content-Type': 'application/json'
+							}
+						});
+						if (refreshResponse.ok) {
+							appointment = await refreshResponse.json();
+						}
+					}
+				}
+			}
+			
+			// If status is completed, ensure transaction exists and update transaction status to 'completed'
+			// Note: Status is never sent in payload, but we still need to handle transaction updates
+			if (currentStatus === 'completed') {
+				// Only check if transaction needs to be updated
+				// Check if transaction exists
+				if (!appointment || !appointment.transaction) {
+					// No transaction exists - payment method should have been selected to create one
+					if (typeof toastr !== 'undefined') {
+						toastr.error('Cannot mark appointment as completed without a transaction. Please select a payment method first.', 'Payment Required', {
+							timeOut: 5000,
+							closeButton: true,
+							progressBar: true
+						});
+					} else {
+						alert('Cannot mark appointment as completed without a transaction. Please select a payment method first.');
+					}
+					submitButton.disabled = false;
+					indicator.style.display = 'inline-block';
+					progress.style.display = 'none';
+					return;
+				}
+				
+				// Transaction exists, update its status to 'completed' if it's not already completed
+				if (appointment.transaction.status !== 'completed') {
+					console.log('Updating transaction status to completed');
+					const updateTransactionData = {
+						status: 'completed'
+					};
+					
+					const updateTransactionResponse = await fetch(`${TRANSACTIONS_API}/${appointment.transaction.id}`, {
+						method: 'PUT',
+						headers: {
+							'Authorization': `Bearer ${token}`,
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify(updateTransactionData)
+					});
+					
+					if (!updateTransactionResponse.ok) {
+						const errorData = await updateTransactionResponse.json();
+						throw new Error(errorData.detail || 'Failed to update transaction status');
+					}
+					
+					// Refresh appointment to get updated transaction
+					const refreshResponse = await fetch(`${APPOINTMENTS_API}?include_services=true`, {
+						headers: {
+							'Authorization': `Bearer ${token}`,
+							'Content-Type': 'application/json'
+						}
+					});
+					if (refreshResponse.ok) {
+						appointment = await refreshResponse.json();
+					}
+				}
+			}
+		
+			// Build form state object
+			// For scheduled, customer_id comes from appointment, not form (field is readonly)
+			let customerIdValue = undefined;
+			if (currentStatus === 'scheduled') {
+				// Use appointment customer_id (field is readonly)
+				customerIdValue = appointment ? appointment.customer_id : undefined;
+			} else {
+				// For other statuses, read from form if not disabled
+				const customerSelect = document.getElementById('customer_select');
+				if (customerSelect && !customerSelect.disabled && customerSelect.value) {
+					customerIdValue = parseInt(customerSelect.value);
+				}
+			}
+			
+			const formState = {
+				customer_id: customerIdValue,
+				staff_id: form.staff_id && !form.staff_id.disabled ? parseInt(form.staff_id.value) : undefined,
+				appointment_date: form.appointment_date && !form.appointment_date.disabled ? appointmentDateTime : undefined,
+				service_ids: selectedServices.length > 0 ? selectedServices : undefined,
+				admin_note: adminNote || null,
+				staff_note: staffNote || null,
+				customer_note: customerNote || null
+			};
+			
+			// Build payload using status-based whitelist (NEVER includes status)
+			const formData = buildUpdatePayloadByStatus(currentStatus, formState, appointment);
+			
+			// Log formData for debugging
+			console.log('Submitting form data (status-based whitelist):', formData);
+
+			const response = await fetch(APPOINTMENTS_API, {
+				method: 'PUT',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(formData)
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				const errorData = await response.json();
+				throw new Error(errorData.detail || 'Failed to update appointment');
+			}
+
+			const updatedAppointment = await response.json();
+
+			// Show success message and redirect
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Appointment updated successfully!",
+					icon: "success",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				}).then(() => {
+					window.location.href = `/appointments/${appointmentId}`;
+				});
+			} else {
+				alert('Appointment updated successfully!');
+				window.location.href = `/appointments/${appointmentId}`;
+			}
+
+		} catch (error) {
+			console.error('Error updating appointment:', error);
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: 'Error: ' + error.message,
+					icon: 'error',
+					buttonsStyling: false,
+					confirmButtonText: 'Ok',
+					customClass: {
+						confirmButton: 'btn btn-primary'
+					}
+				});
+			} else if (typeof toastr !== 'undefined') {
+				toastr.error('Error: ' + error.message, 'Error', {
+					timeOut: 5000,
+					closeButton: true,
+					progressBar: true
+				});
+			} else {
+				alert('Error: ' + error.message);
+			}
+		} finally {
+			// Hide loading state
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+		}
+	});
+
+		// Complete appointment button
+		document.getElementById('complete_appointment_btn')?.addEventListener('click', async function() {
+		// Check if transaction exists before allowing completion
+		if (!appointment || !appointment.transaction) {
+			// Check if payment method is selected
+			const paymentMethodSelect = document.getElementById('payment_method');
+			let paymentMethod = null;
+			if (paymentMethodSelect) {
+				if (typeof $ !== 'undefined' && $(paymentMethodSelect).hasClass('select2-hidden-accessible')) {
+					paymentMethod = $(paymentMethodSelect).val() || null;
+				} else {
+					paymentMethod = paymentMethodSelect.value || null;
+				}
+			}
+			
+			// If no transaction and no payment method selected, show error
+			if (!paymentMethod) {
+				if (typeof toastr !== 'undefined') {
+					toastr.error('Cannot mark appointment as completed without a transaction. Please select a payment method first.', 'Payment Required', {
+						timeOut: 5000,
+						closeButton: true,
+						progressBar: true
+					});
+				} else if (typeof Swal !== 'undefined') {
+					Swal.fire({
+						text: 'Cannot mark appointment as completed without a transaction. Please select a payment method first.',
+						icon: 'error',
+						buttonsStyling: false,
+						confirmButtonText: 'Ok',
+						customClass: {
+							confirmButton: 'btn btn-primary'
+						}
+					});
+				} else {
+					alert('Cannot mark appointment as completed without a transaction. Please select a payment method first.');
+				}
+				return;
+			}
+			
+			// Payment method is selected, but we need to create transaction first
+			// Show message that user should use the form to complete
+			if (typeof toastr !== 'undefined') {
+				toastr.warning('Please use the form below to complete the appointment. Payment method will be processed automatically.', 'Use Form', {
+					timeOut: 5000,
+					closeButton: true,
+					progressBar: true
+				});
+			} else if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: 'Please use the form below to complete the appointment. Payment method will be processed automatically.',
+					icon: 'warning',
+					buttonsStyling: false,
+					confirmButtonText: 'Ok',
+					customClass: {
+						confirmButton: 'btn btn-primary'
+					}
+				});
+			} else {
+				alert('Please use the form below to complete the appointment. Payment method will be processed automatically.');
+			}
+			return;
+		}
+		
+		// Show confirmation dialog using Swal
+		const confirmResult = await new Promise((resolve) => {
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: 'Are you sure you want to mark this appointment as completed?',
+					icon: 'question',
+					showCancelButton: true,
+					confirmButtonText: 'Yes, mark as completed',
+					cancelButtonText: 'Cancel',
+					buttonsStyling: false,
+					customClass: {
+						confirmButton: 'btn btn-primary',
+						cancelButton: 'btn btn-light'
+					}
+				}).then((result) => {
+					resolve(result.isConfirmed);
+				});
+			} else {
+				// Fallback to native confirm if Swal is not available
+				resolve(confirm('Are you sure you want to mark this appointment as completed?'));
+			}
+		});
+		
+		if (!confirmResult) {
+			return;
+		}
+
+		this.disabled = true;
+		try {
+			const response = await fetch(APPOINTMENT_STATUS_API, {
+				method: 'PATCH',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ status: 'completed' })
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				const errorData = await response.json();
+				throw new Error(errorData.detail || 'Failed to update appointment status');
+			}
+
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Appointment marked as completed!",
+					icon: "success",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				}).then(() => {
+					window.location.reload();
+				});
+			} else {
+				alert('Appointment marked as completed!');
+				window.location.reload();
+			}
+		} catch (error) {
+			console.error('Error updating appointment status:', error);
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: 'Error: ' + error.message,
+					icon: 'error',
+					buttonsStyling: false,
+					confirmButtonText: 'Ok',
+					customClass: {
+						confirmButton: 'btn btn-primary'
+					}
+				});
+			} else if (typeof toastr !== 'undefined') {
+				toastr.error('Error: ' + error.message, 'Error', {
+					timeOut: 5000,
+					closeButton: true,
+					progressBar: true
+				});
+			} else {
+				alert('Error: ' + error.message);
+			}
+			this.disabled = false;
+		}
+	});
+
+		// Approve appointment button (for pending status)
+		document.getElementById('approve_appointment_btn')?.addEventListener('click', async function() {
+		// Show confirmation dialog using Swal
+		const confirmResult = await new Promise((resolve) => {
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: 'Are you sure you want to approve this appointment?',
+					icon: 'question',
+					showCancelButton: true,
+					confirmButtonText: 'Yes, approve',
+					cancelButtonText: 'Cancel',
+					buttonsStyling: false,
+					customClass: {
+						confirmButton: 'btn btn-success',
+						cancelButton: 'btn btn-light'
+					}
+				}).then((result) => {
+					resolve(result.isConfirmed);
+				});
+			} else {
+				resolve(confirm('Are you sure you want to approve this appointment?'));
+			}
+		});
+		
+		if (!confirmResult) {
+			return;
+		}
+
+		this.disabled = true;
+		try {
+			const response = await fetch(`${APPOINTMENTS_API}/approve`, {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				const errorData = await response.json();
+				throw new Error(errorData.detail || 'Failed to approve appointment');
+			}
+
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Appointment approved!",
+					icon: "success",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				}).then(() => {
+					window.location.reload();
+				});
+			} else {
+				alert('Appointment approved!');
+				window.location.reload();
+			}
+		} catch (error) {
+			console.error('Error approving appointment:', error);
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: 'Error: ' + error.message,
+					icon: 'error',
+					buttonsStyling: false,
+					confirmButtonText: 'Ok',
+					customClass: {
+						confirmButton: 'btn btn-primary'
+					}
+				});
+			} else if (typeof toastr !== 'undefined') {
+				toastr.error('Error: ' + error.message, 'Error', {
+					timeOut: 5000,
+					closeButton: true,
+					progressBar: true
+				});
+			} else {
+				alert('Error: ' + error.message);
+			}
+			this.disabled = false;
+		}
+	});
+
+		// Reject appointment button (for pending status)
+		document.getElementById('reject_appointment_btn')?.addEventListener('click', async function() {
+		// Show confirmation dialog using Swal
+		const confirmResult = await new Promise((resolve) => {
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: 'Are you sure you want to reject this appointment?',
+					icon: 'question',
+					showCancelButton: true,
+					confirmButtonText: 'Yes, reject',
+					cancelButtonText: 'Cancel',
+					buttonsStyling: false,
+					customClass: {
+						confirmButton: 'btn btn-danger',
+						cancelButton: 'btn btn-light'
+					}
+				}).then((result) => {
+					resolve(result.isConfirmed);
+				});
+			} else {
+				resolve(confirm('Are you sure you want to reject this appointment?'));
+			}
+		});
+		
+		if (!confirmResult) {
+			return;
+		}
+
+		this.disabled = true;
+		try {
+			const response = await fetch(`${APPOINTMENTS_API}/reject`, {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				const errorData = await response.json();
+				throw new Error(errorData.detail || 'Failed to reject appointment');
+			}
+
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Appointment rejected!",
+					icon: "success",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				}).then(() => {
+					window.location.reload();
+				});
+			} else {
+				alert('Appointment rejected!');
+				window.location.reload();
+			}
+		} catch (error) {
+			console.error('Error rejecting appointment:', error);
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: 'Error: ' + error.message,
+					icon: 'error',
+					buttonsStyling: false,
+					confirmButtonText: 'Ok',
+					customClass: {
+						confirmButton: 'btn btn-primary'
+					}
+				});
+			} else if (typeof toastr !== 'undefined') {
+				toastr.error('Error: ' + error.message, 'Error', {
+					timeOut: 5000,
+					closeButton: true,
+					progressBar: true
+				});
+			} else {
+				alert('Error: ' + error.message);
+			}
+			this.disabled = false;
+		}
+	});
+
+		// Cancel appointment button
+		document.getElementById('cancel_appointment_btn')?.addEventListener('click', async function() {
+		// Show confirmation dialog using Swal
+		const confirmResult = await new Promise((resolve) => {
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: 'Are you sure you want to cancel this appointment?',
+					icon: 'question',
+					showCancelButton: true,
+					confirmButtonText: 'Yes, cancel appointment',
+					cancelButtonText: 'No, keep it',
+					buttonsStyling: false,
+					customClass: {
+						confirmButton: 'btn btn-danger',
+						cancelButton: 'btn btn-light'
+					}
+				}).then((result) => {
+					resolve(result.isConfirmed);
+				});
+			} else {
+				// Fallback to native confirm if Swal is not available
+				resolve(confirm('Are you sure you want to cancel this appointment?'));
+			}
+		});
+		
+		if (!confirmResult) {
+			return;
+		}
+
+		this.disabled = true;
+		try {
+			const response = await fetch(APPOINTMENT_STATUS_API, {
+				method: 'PATCH',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ status: 'cancelled' })
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				const errorData = await response.json();
+				throw new Error(errorData.detail || 'Failed to cancel appointment');
+			}
+
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Appointment cancelled!",
+					icon: "success",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				}).then(() => {
+					window.location.reload();
+				});
+			} else {
+				alert('Appointment cancelled!');
+				window.location.reload();
+			}
+		} catch (error) {
+			console.error('Error cancelling appointment:', error);
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: 'Error: ' + error.message,
+					icon: 'error',
+					buttonsStyling: false,
+					confirmButtonText: 'Ok',
+					customClass: {
+						confirmButton: 'btn btn-primary'
+					}
+				});
+			} else if (typeof toastr !== 'undefined') {
+				toastr.error('Error: ' + error.message, 'Error', {
+					timeOut: 5000,
+					closeButton: true,
+					progressBar: true
+				});
+			} else {
+				alert('Error: ' + error.message);
+			}
+			this.disabled = false;
+		}
+	});
+
+		// Set minimum date to today
+		const dateInput = document.getElementById('appointment_date');
+		if (dateInput) {
+			const today = new Date().toISOString().split('T')[0];
+			dateInput.setAttribute('min', today);
+		}
+
+		// Initialize payment method Select2
+		function initPaymentMethodSelect2() {
+			const paymentMethodSelect = document.getElementById('payment_method');
+			if (paymentMethodSelect && typeof $ !== 'undefined' && $.fn.select2) {
+				if (!$(paymentMethodSelect).hasClass('select2-hidden-accessible')) {
+					$(paymentMethodSelect).select2({
+						minimumResultsForSearch: Infinity,
+						placeholder: 'Select payment method',
+						allowClear: true
+					});
+				}
+			}
+		}
+
+	// Load data on page load
+	document.addEventListener('DOMContentLoaded', async function() {
+		// Initialize payment method Select2
+		initPaymentMethodSelect2();
+		
+		// Load services first, then appointment
+		await loadServices();
+		// Then load appointment (will initialize Select2 with selected values)
+		await loadAppointment();
+	});
+</script>
+{% endblock %}
+

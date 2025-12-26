@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--begin::Content container-->
+<div id="kt_app_content_container" class="app-container container-xxl">
+	<!--begin::Error-->
+	<div class="d-flex flex-column flex-root" id="kt_app_root">
+		<!--begin::Page bg image-->
+		<style>
+			body {
+				background-image: url('/static/assets/patterns/header-bg.jpg');
+			}
+			[data-bs-theme="dark"] body {
+				background-image: url('/static/assets/patterns/header-bg-dark.jpg');
+			}
+		</style>
+		<!--end::Page bg image-->
+		<!--begin::Authentication - 404 Page-->
+		<div class="d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed" style="background-image: url('/static/assets/illustrations/dozzy-1/18.png')">
+			<!--begin::Content-->
+			<div class="d-flex flex-column flex-column-fluid text-center p-10 py-lg-20">
+				<!--begin::Logo-->
+				<a href="/" class="mb-10">
+					<img alt="Logo" src="/static/assets/logos/default.png" class="h-40px mb-5" />
+				</a>
+				<!--end::Logo-->
+				<!--begin::Wrapper-->
+				<div class="pt-lg-10 mb-10">
+					<!--begin::Logo-->
+					<h1 class="fw-bolder fs-2qx text-gray-800 mb-4">404</h1>
+					<!--end::Logo-->
+					<!--begin::Message-->
+					<div class="fw-semibold fs-6 text-gray-500 mb-7">We couldn't find the page you're looking for.</div>
+					<!--end::Message-->
+					<!--begin::Action-->
+					<div class="mb-0">
+						<a href="/" class="btn btn-sm btn-primary me-3">Return Home</a>
+						<a href="javascript:history.back()" class="btn btn-sm btn-light">Go Back</a>
+					</div>
+					<!--end::Action-->
+				</div>
+				<!--end::Wrapper-->
+				<!--begin::Illustration-->
+				<div class="mb-0">
+					<img src="/static/assets/illustrations/dozzy-1/17.png" class="mw-100 mh-300px theme-light-show" alt="" />
+					<img src="/static/assets/illustrations/dozzy-1/17-dark.png" class="mw-100 mh-300px theme-dark-show" alt="" />
+				</div>
+				<!--end::Illustration-->
+			</div>
+			<!--end::Content-->
+		</div>
+		<!--end::Authentication - 404 Page-->
+	</div>
+	<!--end::Error-->
+</div>
+<!--end::Content container-->
+{% endblock %}
+
+{% block scripts %}
+<script>
+	"use strict";
+	// No additional scripts needed for 404 page
+</script>
+{% endblock %}
+

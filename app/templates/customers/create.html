@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--begin::Content container-->
+<div id="kt_app_content_container" class="app-container container-xxl">
+	<!--begin::Card-->
+	<div class="card">
+		<!--begin::Card header-->
+		<div class="card-header border-0 pt-6">
+			<!--begin::Card title-->
+			<div class="card-title">
+				<h2 class="fw-bold">Create Customer</h2>
+			</div>
+			<!--end::Card title-->
+		</div>
+		<!--end::Card header-->
+		<!--begin::Card body-->
+		<div class="card-body pt-0">
+			<!--begin::Form-->
+			<form class="form" id="kt_customer_create_form">
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-12">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Full Name</label>
+							<input type="text" class="form-control form-control-solid" name="full_name" placeholder="Enter full name" required />
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Email</label>
+							<input type="email" class="form-control form-control-solid" name="email" placeholder="Enter email address" required />
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label">Phone</label>
+							<input type="tel" class="form-control form-control-solid" name="phone" placeholder="Enter phone number" />
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Actions-->
+				<div class="d-flex justify-content-end">
+					<a href="/customers" class="btn btn-light me-3">Cancel</a>
+					<button type="submit" class="btn btn-primary" id="kt_customer_create_submit">
+						<span class="indicator-label">Create Customer</span>
+						<span class="indicator-progress">Please wait...
+							<span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+						</span>
+					</button>
+				</div>
+				<!--end::Actions-->
+			</form>
+			<!--end::Form-->
+		</div>
+		<!--end::Card body-->
+	</div>
+	<!--end::Card-->
+</div>
+<!--end::Content container-->
+{% endblock %}
+
+{% block scripts %}
+<script>
+	"use strict";
+
+	// Token kontrolü
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		window.location.href = '/login';
+	}
+
+	// API endpoint
+	const CUSTOMERS_API = '/api/customers';
+
+	// Form submit handler
+	document.getElementById('kt_customer_create_form')?.addEventListener('submit', async function(e) {
+		e.preventDefault();
+		
+		const form = e.target;
+		const submitButton = document.getElementById('kt_customer_create_submit');
+		const indicator = submitButton.querySelector('.indicator-label');
+		const progress = submitButton.querySelector('.indicator-progress');
+		
+		// Show loading state
+		submitButton.disabled = true;
+		indicator.style.display = 'none';
+		progress.style.display = 'inline-block';
+
+		// Get form data
+		const formData = {
+			full_name: form.full_name.value.trim(),
+			email: form.email.value.trim(),
+			phone: form.phone.value.trim() || null
+		};
+
+		// Validation
+		if (!formData.full_name) {
+			alert('Full name is required');
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+			return;
+		}
+
+		if (!formData.email) {
+			alert('Email is required');
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+			return;
+		}
+
+		// Email validation
+		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+			alert('Please enter a valid email address');
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+			return;
+		}
+
+		try {
+			const response = await fetch(CUSTOMERS_API, {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(formData)
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				const errorData = await response.json();
+				throw new Error(errorData.detail || 'Failed to create customer');
+			}
+
+			// Show success message and redirect
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Customer created successfully!",
+					icon: "success",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				}).then(() => {
+					window.location.href = '/customers';
+				});
+			} else {
+				alert('Customer created successfully!');
+				window.location.href = '/customers';
+			}
+
+		} catch (error) {
+			console.error('Error creating customer:', error);
+			alert('Error: ' + error.message);
+		} finally {
+			// Hide loading state
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+		}
+	});
+</script>
+{% endblock %}
+

@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--begin::Content container-->
+<div id="kt_app_content_container" class="app-container container-xxl">
+	<!--begin::Card-->
+	<div class="card">
+		<!--begin::Card header-->
+		<div class="card-header border-0 pt-6">
+			<!--begin::Card title-->
+			<div class="card-title">
+				<h2 class="fw-bold">Top Selling Services Report</h2>
+			</div>
+			<!--end::Card title-->
+			<!--begin::Card toolbar-->
+			<div class="card-toolbar">
+				<!--begin::Toolbar-->
+				<div class="d-flex justify-content-end">
+					<a href="/services" class="btn btn-light-primary">
+						<i class="ki-duotone ki-arrow-left fs-2"></i>Back to Services
+					</a>
+				</div>
+				<!--end::Toolbar-->
+			</div>
+			<!--end::Card toolbar-->
+		</div>
+		<!--end::Card header-->
+		<!--begin::Card body-->
+		<div class="card-body pt-0">
+			<!--begin::Info-->
+			<div class="alert alert-info d-flex align-items-center p-5 mb-10">
+				<i class="ki-duotone ki-information-5 fs-2hx text-info me-4">
+					<span class="path1"></span>
+					<span class="path2"></span>
+					<span class="path3"></span>
+				</i>
+				<div class="d-flex flex-column">
+					<h4 class="mb-1 text-info">Report Information</h4>
+					<span>This report shows the top 10 services based on completed appointments. Only services from completed appointments are included in the metrics.</span>
+				</div>
+			</div>
+			<!--end::Info-->
+			<!--begin::Table-->
+			<div class="table-responsive">
+				<table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_top_selling_table">
+					<thead>
+						<tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
+							<th class="min-w-50px">Rank</th>
+							<th class="min-w-200px">Service Name</th>
+							<th class="min-w-150px text-end">Booking Count</th>
+							<th class="min-w-150px text-end">Total Revenue</th>
+						</tr>
+					</thead>
+					<tbody class="fw-semibold text-gray-600" id="kt_top_selling_table_body">
+						<!-- Loading row -->
+						<tr id="top_selling_loading">
+							<td colspan="4" class="text-center py-10">
+								<div class="spinner-border text-primary" role="status">
+									<span class="visually-hidden">Loading...</span>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<!--end::Table-->
+			<!--begin::Empty State-->
+			<div id="top_selling_empty" class="text-center py-10" style="display: none;">
+				<div class="text-gray-500 fs-4">No services found</div>
+			</div>
+			<!--end::Empty State-->
+			<!--begin::Summary Card-->
+			<div class="card card-flush mt-10" id="summary_card" style="display: none;">
+				<div class="card-header">
+					<div class="card-title">
+						<h3 class="fw-bold">Summary</h3>
+					</div>
+				</div>
+				<div class="card-body pt-0">
+					<div class="row">
+						<div class="col-lg-6">
+							<div class="d-flex align-items-center mb-5">
+								<div class="flex-grow-1">
+									<span class="text-gray-500 fw-semibold fs-6">Total Services</span>
+									<span class="text-gray-800 fw-bold fs-2 d-block" id="total_services">0</span>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-6">
+							<div class="d-flex align-items-center mb-5">
+								<div class="flex-grow-1">
+									<span class="text-gray-500 fw-semibold fs-6">Total Revenue</span>
+									<span class="text-primary fw-bold fs-2 d-block" id="total_revenue">$0.00</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!--end::Summary Card-->
+		</div>
+		<!--end::Card body-->
+	</div>
+	<!--end::Card-->
+</div>
+<!--end::Content container-->
+{% endblock %}
+
+{% block scripts %}
+<script>
+	"use strict";
+
+	// Token kontrolü
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		window.location.href = '/login';
+	}
+
+	// API endpoint
+	const TOP_SELLING_API = '/api/services/top-selling';
+
+	// Format currency
+	function formatCurrency(amount) {
+		if (!amount) return '$0.00';
+		const num = parseFloat(amount);
+		return '$' + num.toFixed(2);
+	}
+
+	// Load top selling services
+	async function loadTopSellingServices() {
+		try {
+			const response = await fetch(TOP_SELLING_API, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const services = await response.json();
+			
+			// Hide loading
+			document.getElementById('top_selling_loading').style.display = 'none';
+
+			if (services.length === 0) {
+				document.getElementById('top_selling_empty').style.display = 'block';
+				return;
+			}
+
+			// Populate table
+			const tbody = document.getElementById('kt_top_selling_table_body');
+			tbody.innerHTML = '';
+
+			let totalRevenue = 0;
+			services.forEach((service, index) => {
+				const revenue = parseFloat(service.total_revenue || 0);
+				totalRevenue += revenue;
+
+				const row = document.createElement('tr');
+				row.innerHTML = `
+					<td>
+						<span class="badge badge-circle badge-light-primary">${index + 1}</span>
+					</td>
+					<td>
+						<a href="/services/${service.id}/edit" class="text-gray-800 text-hover-primary fw-bold">${escapeHtml(service.name)}</a>
+					</td>
+					<td class="text-end">
+						<span class="fw-bold text-gray-800">${service.booking_count || 0}</span>
+					</td>
+					<td class="text-end">
+						<span class="fw-bold text-primary">${formatCurrency(service.total_revenue)}</span>
+					</td>
+				`;
+				tbody.appendChild(row);
+			});
+
+			// Update summary
+			document.getElementById('total_services').textContent = services.length;
+			document.getElementById('total_revenue').textContent = formatCurrency(totalRevenue);
+			document.getElementById('summary_card').style.display = 'block';
+
+		} catch (error) {
+			console.error('Error loading top selling services:', error);
+			document.getElementById('top_selling_loading').style.display = 'none';
+			document.getElementById('top_selling_empty').style.display = 'block';
+			document.getElementById('top_selling_empty').textContent = 'Error loading data. Please refresh the page.';
+		}
+	}
+
+	// Helper function to escape HTML
+	function escapeHtml(text) {
+		if (!text) return '';
+		const div = document.createElement('div');
+		div.textContent = text;
+		return div.innerHTML;
+	}
+
+	// Load data on page load
+	document.addEventListener('DOMContentLoaded', function() {
+		loadTopSellingServices();
+	});
+</script>
+{% endblock %}
+

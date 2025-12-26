@@ -1,0 +1,919 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--begin::Card - Filter Bar-->
+<div class="card mb-5">
+	<div class="card-body">
+		<div class="row g-3 align-items-end">
+			<!--begin::Staff Multi-Select-->
+			<div class="col-md-2">
+				<label class="form-label fw-semibold">Staff</label>
+				<select class="form-select form-select-solid" id="filter_staff" multiple="multiple" data-placeholder="Select staff">
+				</select>
+			</div>
+			<!--end::Staff Multi-Select-->
+			
+			<!--begin::Customer Multi-Select-->
+			<div class="col-md-2">
+				<label class="form-label fw-semibold">Customer</label>
+				<select class="form-select form-select-solid" id="filter_customer" multiple="multiple" data-placeholder="Select customer">
+				</select>
+			</div>
+			<!--end::Customer Multi-Select-->
+			
+			<!--begin::Status Multi-Select-->
+			<div class="col-md-2">
+				<label class="form-label fw-semibold">Status</label>
+				<select class="form-select form-select-solid" id="filter_status" multiple="multiple" data-placeholder="Select status">
+				</select>
+			</div>
+			<!--end::Status Multi-Select-->
+			
+			<!--begin::Service Multi-Select-->
+			<div class="col-md-2">
+				<label class="form-label fw-semibold">Service</label>
+				<select class="form-select form-select-solid" id="filter_service" multiple="multiple" data-placeholder="Select service">
+				</select>
+			</div>
+			<!--end::Service Multi-Select-->
+			
+			<!--begin::Color By Single-Select-->
+			<div class="col-md-2">
+				<label class="form-label fw-semibold">Color By</label>
+				<select class="form-select form-select-solid" id="color_by" data-placeholder="Select color mode">
+					<option value="status" selected>Status</option>
+					<option value="customer">Customer</option>
+					<option value="staff">Staff</option>
+					<option value="service">Service</option>
+				</select>
+			</div>
+			<!--end::Color By Single-Select-->
+			
+			<!--begin::Action Buttons-->
+			<div class="col-md-2 text-end">
+				<button type="button" class="btn btn-light" id="btn_clear_filters">Clear Filters</button>
+			</div>
+			<!--end::Action Buttons-->
+		</div>
+											</div>
+										</div>
+<!--end::Card - Filter Bar-->
+
+<!--begin::Card - Calendar-->
+<div class="card">
+										<div class="card-body">
+											<!--begin::Calendar-->
+		<div id="kt_calendar_day"></div>
+											<!--end::Calendar-->
+										</div>
+									</div>
+<!--end::Card - Calendar-->
+
+<!--begin::Modal - Event Details-->
+<div class="modal fade" id="kt_modal_event_details" tabindex="-1" aria-hidden="true">
+										<div class="modal-dialog modal-dialog-centered mw-650px">
+											<div class="modal-content">
+													<!--begin::Modal header-->
+													<div class="modal-header">
+				<h2 class="fw-bold" id="event_modal_title">Event Details</h2>
+				<div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
+															<i class="ki-duotone ki-cross fs-1">
+																<span class="path1"></span>
+																<span class="path2"></span>
+															</i>
+														</div>
+													</div>
+													<!--end::Modal header-->
+			
+													<!--begin::Modal body-->
+													<div class="modal-body py-10 px-lg-17">
+				<!--begin::Event Info-->
+				<div class="d-flex flex-column gap-5">
+					<div class="d-flex justify-content-between align-items-center">
+						<span class="text-gray-600 fw-semibold">Date & Time:</span>
+						<span class="text-gray-800 fw-bold" id="event_modal_datetime"></span>
+														</div>
+					<div class="d-flex justify-content-between align-items-center">
+						<span class="text-gray-600 fw-semibold">Staff:</span>
+						<span class="text-gray-800" id="event_modal_staff"></span>
+														</div>
+					<div class="d-flex justify-content-between align-items-center">
+						<span class="text-gray-600 fw-semibold">Customer:</span>
+						<span class="text-gray-800" id="event_modal_customer"></span>
+														</div>
+					<div class="d-flex justify-content-between align-items-center">
+						<span class="text-gray-600 fw-semibold">Status:</span>
+						<span class="badge" id="event_modal_status"></span>
+														</div>
+					<div class="d-flex justify-content-between align-items-start">
+						<span class="text-gray-600 fw-semibold">Services:</span>
+						<span class="text-gray-800 text-end" id="event_modal_services"></span>
+																</div>
+					<div class="d-flex justify-content-between align-items-center">
+						<span class="text-gray-600 fw-semibold">Amount:</span>
+						<span class="text-gray-800 fw-bold">$<span id="event_modal_amount">0.00</span></span>
+																</div>
+															</div>
+				<!--end::Event Info-->
+													</div>
+													<!--end::Modal body-->
+			
+													<!--begin::Modal footer-->
+			<div class="modal-footer">
+				<button type="button" class="btn btn-light-primary" id="event_modal_view_btn">View</button>
+				<button type="button" class="btn btn-primary" id="event_modal_edit_btn">Edit</button>
+													</div>
+													<!--end::Modal footer-->
+											</div>
+										</div>
+									</div>
+<!--end::Modal - Event Details-->
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+	// Get token from localStorage
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		console.error('No token found. Please login.');
+		return;
+	}
+	
+	// API endpoints
+	const CUSTOMERS_API = '/api/customers';
+	const STAFF_API = '/api/staff';
+	const APPOINTMENTS_API = '/api/appointments';
+	
+	// Status options (static)
+	const statusOptions = [
+		{ id: 'scheduled', name: 'Scheduled' },
+		{ id: 'completed', name: 'Completed' },
+		{ id: 'cancelled', name: 'Cancelled' },
+		{ id: 'no_show', name: 'No Show' }
+	];
+	
+	// Service list (will be loaded from API)
+	let serviceList = [];
+	
+	// Load customers from API and populate select
+	async function loadCustomers() {
+		try {
+			const response = await fetch(CUSTOMERS_API, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+			
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			
+			const customers = await response.json();
+			const $customerSelect = $('#filter_customer');
+			
+			// Clear and populate
+			$customerSelect.empty();
+			customers.forEach(customer => {
+				$customerSelect.append(new Option(`${customer.full_name} (${customer.email})`, customer.id, false, false));
+			});
+		} catch (error) {
+			console.error('Error loading customers:', error);
+		}
+	}
+	
+	// Load staff from API and populate select
+	async function loadStaff() {
+		try {
+			const response = await fetch(STAFF_API, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+			
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			
+			const staffList = await response.json();
+			const $staffSelect = $('#filter_staff');
+			
+			// Clear and populate (only active staff)
+			$staffSelect.empty();
+			staffList.filter(staff => staff.is_active).forEach(staff => {
+				$staffSelect.append(new Option(staff.full_name, staff.id, false, false));
+			});
+		} catch (error) {
+			console.error('Error loading staff:', error);
+		}
+	}
+	
+	// Load services from API and populate select
+	async function loadServices() {
+		try {
+			const response = await fetch('/api/services', {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+			
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			
+			const services = await response.json();
+			const $serviceSelect = $('#filter_service');
+			
+			// Store service list globally
+			serviceList = services.filter(service => service.is_active);
+			
+			// Clear and populate (only active services)
+			$serviceSelect.empty();
+			serviceList.forEach(service => {
+				$serviceSelect.append(new Option(service.name, service.id, false, false));
+			});
+		} catch (error) {
+			console.error('Error loading services:', error);
+		}
+	}
+	
+	// Initialize Select2 for filters
+	if (typeof $ !== 'undefined') {
+		// Staff Select2 (multi-select)
+		$('#filter_staff').select2({
+			placeholder: 'Select staff',
+			allowClear: true,
+			closeOnSelect: false,
+			width: '100%'
+		});
+		
+		// Customer Select2 (multi-select)
+		$('#filter_customer').select2({
+			placeholder: 'Select customer',
+			allowClear: true,
+			closeOnSelect: false,
+			width: '100%'
+		});
+		
+		// Status Select2
+		$('#filter_status').select2({
+			placeholder: 'Select status',
+			allowClear: true,
+			closeOnSelect: false,
+			width: '100%'
+		});
+		
+		// Populate status options
+		statusOptions.forEach(status => {
+			$('#filter_status').append(new Option(status.name, status.id, false, false));
+		});
+		
+		// Service Select2
+		$('#filter_service').select2({
+			placeholder: 'Select service',
+			allowClear: true,
+			closeOnSelect: false,
+			width: '100%'
+		});
+		
+		// Color By Select2 (single select)
+		$('#color_by').select2({
+			placeholder: 'Select color mode',
+			minimumResultsForSearch: Infinity,
+			allowClear: false,
+			width: '100%'
+		});
+		
+		// Load data from API
+		loadCustomers();
+		loadStaff();
+		loadServices();
+	}
+	
+	// Color palette for deterministic coloring
+	const colorPalette = [
+		{ class: 'fc-event-primary', hex: '#009ef7' },
+		{ class: 'fc-event-success', hex: '#50cd89' },
+		{ class: 'fc-event-warning', hex: '#ffc700' },
+		{ class: 'fc-event-danger', hex: '#f1416c' },
+		{ class: 'fc-event-info', hex: '#7239ea' },
+		{ class: 'fc-event-dark', hex: '#181c32' },
+		{ class: 'fc-event-secondary', hex: '#e4e6ef' },
+		{ class: 'fc-event-primary', hex: '#009ef7' }, // Repeat for more entities
+		{ class: 'fc-event-success', hex: '#50cd89' },
+		{ class: 'fc-event-warning', hex: '#ffc700' },
+		{ class: 'fc-event-danger', hex: '#f1416c' },
+		{ class: 'fc-event-info', hex: '#7239ea' }
+	];
+	
+	// Status-based color mapping
+	const statusColorMap = {
+		'scheduled': { class: 'fc-event-primary', hex: '#009ef7' },
+		'completed': { class: 'fc-event-success', hex: '#50cd89' },
+		'cancelled': { class: 'fc-event-danger', hex: '#f1416c' },
+		'no_show': { class: 'fc-event-info', hex: '#7239ea' }
+	};
+	
+	// Deterministic color mapping cache
+	const colorMapCache = {
+		customer: new Map(),
+		staff: new Map(),
+		service: new Map()
+	};
+	
+	// Apply color mode to events
+	function applyColorMode(events, colorBy) {
+		if (!events || events.length === 0) return events;
+		
+		const coloredEvents = events.map(event => {
+			const eventCopy = { ...event };
+			// Ensure extendedProps exists
+			if (!eventCopy.extendedProps) {
+				eventCopy.extendedProps = {};
+			}
+			
+			// Get values from extendedProps
+			const props = eventCopy.extendedProps;
+			
+			if (colorBy === 'status') {
+				const colorInfo = statusColorMap[props.status] || { class: 'fc-event-secondary', hex: '#e4e6ef' };
+				eventCopy.classNames = [colorInfo.class];
+				eventCopy.backgroundColor = colorInfo.hex;
+				eventCopy.borderColor = colorInfo.hex;
+			} else if (colorBy === 'customer') {
+				const customerId = String(props.customer_id);
+				if (!colorMapCache.customer.has(customerId)) {
+					const index = colorMapCache.customer.size % colorPalette.length;
+					colorMapCache.customer.set(customerId, colorPalette[index]);
+				}
+				const colorInfo = colorMapCache.customer.get(customerId);
+				eventCopy.classNames = [colorInfo.class];
+				eventCopy.backgroundColor = colorInfo.hex;
+				eventCopy.borderColor = colorInfo.hex;
+			} else if (colorBy === 'staff') {
+				const staffId = String(props.staff_id);
+				if (!colorMapCache.staff.has(staffId)) {
+					const index = colorMapCache.staff.size % colorPalette.length;
+					colorMapCache.staff.set(staffId, colorPalette[index]);
+				}
+				const colorInfo = colorMapCache.staff.get(staffId);
+				eventCopy.classNames = [colorInfo.class];
+				eventCopy.backgroundColor = colorInfo.hex;
+				eventCopy.borderColor = colorInfo.hex;
+			} else if (colorBy === 'service') {
+				// Use first service_id (deterministic)
+				const serviceIds = props.service_ids || [];
+				const firstServiceId = serviceIds.length > 0 ? String(serviceIds[0]) : 'none';
+				if (!colorMapCache.service.has(firstServiceId)) {
+					const index = colorMapCache.service.size % colorPalette.length;
+					colorMapCache.service.set(firstServiceId, colorPalette[index]);
+				}
+				const colorInfo = colorMapCache.service.get(firstServiceId);
+				eventCopy.classNames = [colorInfo.class];
+				eventCopy.backgroundColor = colorInfo.hex;
+				eventCopy.borderColor = colorInfo.hex;
+			}
+			
+			return eventCopy;
+		});
+		
+		return coloredEvents;
+	}
+	
+	// Convert appointment from API to FullCalendar event format
+	function appointmentToEvent(appointment) {
+		// Parse appointment_date - handle both string and Date object
+		let appointmentDate;
+		if (appointment.appointment_date instanceof Date) {
+			appointmentDate = appointment.appointment_date;
+		} else if (typeof appointment.appointment_date === 'string') {
+			appointmentDate = new Date(appointment.appointment_date);
+		} else {
+			console.error('Invalid appointment_date format:', appointment.appointment_date);
+			appointmentDate = new Date();
+		}
+		
+		// Validate date
+		if (isNaN(appointmentDate.getTime())) {
+			console.error('Invalid appointment_date:', appointment.appointment_date);
+			appointmentDate = new Date();
+		}
+		
+		// Calculate end time based on service durations
+		let totalDuration = 0;
+		if (appointment.services && appointment.services.length > 0) {
+			totalDuration = appointment.services.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
+		}
+		const endDate = new Date(appointmentDate.getTime() + totalDuration * 60000);
+		
+		// Calculate total amount
+		const totalAmount = appointment.services && appointment.services.length > 0
+			? appointment.services.reduce((sum, s) => sum + (parseFloat(s.price) || 0), 0)
+			: 0;
+		
+		// Get service names
+		const serviceNames = appointment.services && appointment.services.length > 0
+			? appointment.services.map(s => s.name).join(', ')
+			: 'N/A';
+		
+		// Format time range
+		const startTime = appointmentDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+		const endTime = endDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+		
+		return {
+			id: appointment.id,
+			title: `${startTime} - ${appointment.customer_full_name || 'N/A'} / ${appointment.staff_full_name || 'N/A'} / ${serviceNames}`,
+			start: appointmentDate.toISOString(),
+			end: endDate.toISOString(),
+			extendedProps: {
+				staff_id: appointment.staff_id,
+				customer_id: appointment.customer_id,
+				status: appointment.status,
+				service_ids: appointment.services ? appointment.services.map(s => s.service_id) : [],
+				amount: totalAmount.toFixed(2),
+				staff_name: appointment.staff_full_name || 'N/A',
+				customer_name: appointment.customer_full_name || 'N/A',
+				services: appointment.services || []
+			}
+		};
+	}
+	
+	// Load appointments from API with request tracking
+	let currentAbortController = null;
+	let currentRequestId = 0;
+	let latestRequestId = 0;
+	
+	async function loadAppointments(startDate, endDate, filters = {}) {
+		// Cancel previous request if any
+		if (currentAbortController) {
+			currentAbortController.abort();
+		}
+		
+		// Create new request with unique ID
+		currentRequestId = ++latestRequestId;
+		const requestId = currentRequestId;
+		currentAbortController = new AbortController();
+		
+		try {
+			// Build query parameters
+			const params = new URLSearchParams();
+			params.append('include_services', 'true');
+			params.append('include_names', 'true');
+			
+			// Date range - use local date components to avoid timezone issues
+			let startDateStr = null;
+			let endDateStr = null;
+			
+			if (startDate) {
+				// Get local date string (YYYY-MM-DD) using local date components
+				const year = startDate.getFullYear();
+				const month = String(startDate.getMonth() + 1).padStart(2, '0');
+				const day = String(startDate.getDate()).padStart(2, '0');
+				startDateStr = `${year}-${month}-${day}`;
+				params.append('start_date', startDateStr);
+			}
+			if (endDate) {
+				// Get local date string (YYYY-MM-DD) using local date components
+				const year = endDate.getFullYear();
+				const month = String(endDate.getMonth() + 1).padStart(2, '0');
+				const day = String(endDate.getDate()).padStart(2, '0');
+				endDateStr = `${year}-${month}-${day}`;
+				params.append('end_date', endDateStr);
+			}
+			
+			// Debug: Log date range
+			console.log('Date range sent to API:', {
+				startDate: startDate ? startDate.toISOString() : null,
+				endDate: endDate ? endDate.toISOString() : null,
+				startDateStr: startDateStr,
+				endDateStr: endDateStr
+			});
+			
+			// Filters
+			if (filters.staff_id && filters.staff_id.length > 0) {
+				filters.staff_id.forEach(staffId => params.append('staff_id', staffId));
+			}
+			if (filters.customer_id && filters.customer_id.length > 0) {
+				filters.customer_id.forEach(customerId => params.append('customer_id', customerId));
+			}
+			if (filters.status && filters.status.length > 0) {
+				filters.status.forEach(status => params.append('status', status));
+			}
+			if (filters.service_id && filters.service_id.length > 0) {
+				filters.service_id.forEach(serviceId => params.append('service_id', serviceId));
+			}
+			
+			const response = await fetch(`${APPOINTMENTS_API}?${params.toString()}`, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				signal: currentAbortController.signal
+			});
+			
+			// Check if this request is still the latest one
+			if (requestId !== latestRequestId) {
+				// This request is outdated, ignore the response
+				return [];
+			}
+			
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			
+			const appointments = await response.json();
+			
+			// Double check: if a newer request was started, ignore this response
+			if (requestId !== latestRequestId) {
+				return [];
+			}
+			
+			// Convert to FullCalendar events
+			const events = appointments.map(appointmentToEvent);
+			
+			return events;
+		} catch (error) {
+			// Check if this request is still the latest one
+			if (requestId !== latestRequestId) {
+				// This request is outdated, silently ignore
+				return [];
+			}
+			
+			if (error.name === 'AbortError') {
+				// Request was aborted, silently return empty array
+				return [];
+			}
+			console.error('Error loading appointments:', error);
+			throw error;
+		}
+	}
+	
+	// Helper: Convert date to YYYY-MM-DD format
+	function toYmd(date) {
+		return date.toISOString().split('T')[0];
+	}
+	
+	// Helper: Build count map from calendar events (ymd -> count)
+	function buildCountMap() {
+		if (!calendar) return new Map();
+		
+		const countMap = new Map();
+		const events = calendar.getEvents();
+		
+		events.forEach(event => {
+			const eventDate = new Date(event.start);
+			const ymd = toYmd(eventDate);
+			countMap.set(ymd, (countMap.get(ymd) || 0) + 1);
+		});
+		
+		return countMap;
+	}
+	
+	// Update month view day cell counts
+	function updateMonthCounts() {
+		// Safety checks
+		if (!calendarEl) return;
+		if (!calendar) return;
+		if (calendar.view.type !== 'dayGridMonth') return;
+		
+		const countMap = buildCountMap();
+		const dayCells = calendarEl.querySelectorAll('.fc-daygrid-day:not(.fc-day-other)');
+		
+		dayCells.forEach(cell => {
+			// Get date from cell's data-date attribute
+			let dateStr = cell.getAttribute('data-date');
+			
+			// If not found, try to extract from aria-label
+			if (!dateStr) {
+				const ariaLabel = cell.getAttribute('aria-label');
+				if (ariaLabel) {
+					// aria-label format: "Monday, January 1, 2024"
+					const dateMatch = ariaLabel.match(/(\w+), (\w+) (\d+), (\d+)/);
+					if (dateMatch) {
+						const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+						                     'July', 'August', 'September', 'October', 'November', 'December'];
+						const month = monthNames.indexOf(dateMatch[2]);
+						const day = parseInt(dateMatch[3]);
+						const year = parseInt(dateMatch[4]);
+						if (month !== -1 && !isNaN(day) && !isNaN(year)) {
+							const date = new Date(year, month, day);
+							dateStr = toYmd(date);
+						}
+					}
+				}
+			}
+			
+			// If still not found, try day number + view month/year
+			if (!dateStr) {
+				const dayNumberEl = cell.querySelector('.fc-daygrid-day-number');
+				if (dayNumberEl) {
+					const dayNumber = parseInt(dayNumberEl.textContent.trim());
+					if (!isNaN(dayNumber) && dayNumber >= 1 && dayNumber <= 31) {
+						const viewStart = calendar.view.activeStart;
+						const year = viewStart.getFullYear();
+						const month = viewStart.getMonth();
+						try {
+							const date = new Date(year, month, dayNumber);
+							// Verify the date is valid (not out of month range)
+							if (date.getMonth() === month && date.getDate() === dayNumber) {
+								dateStr = toYmd(date);
+							}
+						} catch (e) {
+							// Invalid date, skip
+						}
+					}
+				}
+			}
+			
+			if (!dateStr) return;
+			
+			// Remove existing count
+			const existingCount = cell.querySelector('.js-appt-count');
+			if (existingCount) {
+				existingCount.remove();
+			}
+			
+			const count = countMap.get(dateStr) || 0;
+			if (count > 0) {
+				// Find target container
+				const target = cell.querySelector('.fc-daygrid-day-frame') || 
+				               cell.querySelector('.fc-daygrid-day-top') || 
+				               cell;
+				
+				if (target) {
+					const countDiv = document.createElement('div');
+					countDiv.className = 'js-appt-count mt-1';
+					countDiv.innerHTML = `
+						<span class="badge badge-light-primary fw-bold me-1">${count}</span>
+						<span class="text-muted fs-8">appointment${count !== 1 ? 's' : ''}</span>
+					`;
+					target.appendChild(countDiv);
+				}
+			}
+		});
+	}
+	
+	// Refresh calendar based on current view
+	function refreshCalendar() {
+		if (!calendar) return;
+		
+		const currentView = calendar.view.type;
+		
+		// Refetch events for all views (including month)
+		calendar.refetchEvents();
+		
+		// Also update month counts if in month view
+		if (currentView === 'dayGridMonth') {
+			setTimeout(updateMonthCounts, 0);
+		}
+	}
+	
+	// Initialize FullCalendar
+	const calendarEl = document.getElementById('kt_calendar_day');
+	let calendar;
+	
+	if (calendarEl && typeof FullCalendar !== 'undefined') {
+		calendar = new FullCalendar.Calendar(calendarEl, {
+			initialView: 'timeGridDay',
+			initialDate: new Date(),
+			headerToolbar: {
+				left: 'prev,next today',
+				center: 'title',
+				right: 'dayGridMonth,timeGridWeek,timeGridDay'
+			},
+			views: {
+				timeGridDay: {
+					slotMinTime: '08:00:00',
+					slotMaxTime: '22:00:00',
+					nowIndicator: true
+				},
+				timeGridWeek: {
+					slotMinTime: '08:00:00',
+					slotMaxTime: '22:00:00',
+					nowIndicator: true
+				},
+				dayGridMonth: {
+					// Month view doesn't need time slots
+				}
+			},
+			editable: false,
+			events: async function(fetchInfo, successCallback, failureCallback) {
+				try {
+					// Debug: Log fetchInfo
+					console.log('FullCalendar fetchInfo:', {
+						start: fetchInfo.start,
+						end: fetchInfo.end,
+						startStr: fetchInfo.startStr,
+						endStr: fetchInfo.endStr,
+						timeZone: fetchInfo.timeZone,
+						view: calendar ? calendar.view.type : 'unknown'
+					});
+					
+					// Get active filters
+					const filters = {
+						staff_id: $('#filter_staff').val() ? $('#filter_staff').val().map(id => parseInt(id)) : [],
+						customer_id: $('#filter_customer').val() ? $('#filter_customer').val().map(id => parseInt(id)) : [],
+						status: $('#filter_status').val() || [],
+						service_id: $('#filter_service').val() ? $('#filter_service').val().map(id => parseInt(id)) : []
+					};
+					
+					// Load appointments from API
+					const events = await loadAppointments(fetchInfo.start, fetchInfo.end, filters);
+					
+					// Debug: Log events
+					console.log(`Loaded ${events.length} events from API`);
+					if (events.length > 0) {
+						console.log('First event sample:', {
+							id: events[0].id,
+							title: events[0].title,
+							start: events[0].start,
+							end: events[0].end,
+							extendedProps: events[0].extendedProps
+						});
+					}
+					
+					// If events is empty array (aborted or outdated request), just return empty
+					if (events.length === 0) {
+						successCallback([]);
+						return;
+					}
+					
+					// Apply color mode
+					const colorBy = $('#color_by').val() || 'status';
+					const colored = applyColorMode(events, colorBy);
+					
+					console.log(`Sending ${colored.length} colored events to FullCalendar`);
+					successCallback(colored);
+				} catch (error) {
+					// Only log and call failureCallback for real errors, not aborted requests
+					if (error.name !== 'AbortError') {
+						console.error('Error loading events:', error);
+						if (failureCallback) {
+							failureCallback(error);
+						}
+					} else {
+						// Aborted request, silently return empty
+						successCallback([]);
+					}
+				}
+			},
+			eventContent: function(arg) {
+				const event = arg.event;
+				const eventData = event.extendedProps;
+				
+				// Get customer, staff, and service names
+				const customerName = eventData.customer_name || 'N/A';
+				const staffName = eventData.staff_name || 'N/A';
+				const services = eventData.services && eventData.services.length > 0
+					? eventData.services.map(s => s.name).join(', ')
+					: 'N/A';
+				
+				// Format time range (e.g., "9:00 - 9:30")
+				const startDate = new Date(event.start);
+				const endDate = new Date(event.end);
+				const startTime = startDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+				const endTime = endDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+				const timeRange = `${startTime} - ${endTime}`;
+				
+				// Create custom content
+				const contentDiv = document.createElement('div');
+				contentDiv.className = 'fc-event-main-frame';
+				
+				if (arg.view.type === 'dayGridMonth') {
+					// Month view: Show compact format (just time and customer)
+					contentDiv.style.padding = '1px 2px';
+					contentDiv.style.fontSize = '9px';
+					contentDiv.style.lineHeight = '1.2';
+					contentDiv.innerHTML = `<div style="font-weight: 500;">${startTime} - ${customerName}</div>`;
+				} else {
+					// Day/Week view: Show full format with time / customer / staff / service
+					contentDiv.style.padding = '2px 4px';
+					contentDiv.style.fontSize = '11px';
+					contentDiv.style.lineHeight = '1.3';
+					contentDiv.innerHTML = `<div style="font-weight: 600; margin-bottom: 2px;">${timeRange} / ${customerName} / ${staffName} / ${services}</div>`;
+				}
+				
+				return { domNodes: [contentDiv] };
+			},
+			datesSet: function(arg) {
+				// Refresh calendar when view or date changes
+				// Refetch events for all views (including month)
+				calendar.refetchEvents();
+				
+				// Also update month counts if in month view
+				if (arg.view.type === 'dayGridMonth') {
+					setTimeout(updateMonthCounts, 0);
+				}
+			},
+			eventClick: function(info) {
+				const event = info.event;
+				const eventData = event.extendedProps;
+				
+				// Format date/time
+				const startDate = new Date(event.start);
+				const endDate = new Date(event.end);
+				const dateTimeStr = `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} ${startDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} - ${endDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+				
+				// Set modal content
+				document.getElementById('event_modal_title').textContent = event.title;
+				document.getElementById('event_modal_datetime').textContent = dateTimeStr;
+				document.getElementById('event_modal_staff').textContent = eventData.staff_name || 'N/A';
+				document.getElementById('event_modal_customer').textContent = eventData.customer_name || 'N/A';
+				
+				// Status badge
+				const statusBadge = document.getElementById('event_modal_status');
+				const statusClassMap = {
+					'scheduled': 'badge-light-primary',
+					'completed': 'badge-light-success',
+					'cancelled': 'badge-light-danger',
+					'no_show': 'badge-light-info'
+				};
+				statusBadge.className = 'badge ' + (statusClassMap[eventData.status] || 'badge-light-secondary');
+				statusBadge.textContent = statusOptions.find(s => s.id === eventData.status)?.name || eventData.status;
+				
+				// Services
+				const servicesText = eventData.services && eventData.services.length > 0 
+					? eventData.services.map(s => s.name).join(', ')
+					: 'N/A';
+				document.getElementById('event_modal_services').textContent = servicesText;
+				
+				// Amount
+				document.getElementById('event_modal_amount').textContent = parseFloat(eventData.amount || 0).toFixed(2);
+				
+				// Set View/Edit button URLs
+				const appointmentId = event.id;
+				document.getElementById('event_modal_view_btn').onclick = function() {
+					window.location.href = `/appointments/${appointmentId}`;
+				};
+				document.getElementById('event_modal_edit_btn').onclick = function() {
+					window.location.href = `/appointments/${appointmentId}/edit`;
+				};
+				
+				// Show modal
+				const modal = new bootstrap.Modal(document.getElementById('kt_modal_event_details'));
+				modal.show();
+			},
+			eventDidMount: function(info) {
+				// Color is already applied via classNames and backgroundColor in applyColorMode
+				// But we ensure the class is applied to the element
+				if (info.event.classNames && info.event.classNames.length > 0) {
+					info.event.classNames.forEach(className => {
+						info.el.classList.add(className);
+					});
+				}
+				
+				// Also apply inline styles if backgroundColor is set
+				if (info.event.backgroundColor) {
+					info.el.style.backgroundColor = info.event.backgroundColor;
+				}
+				if (info.event.borderColor) {
+					info.el.style.borderColor = info.event.borderColor;
+				}
+				
+				// Add cursor pointer for clickable events
+				info.el.style.cursor = 'pointer';
+			}
+		});
+		
+		calendar.render();
+		
+		// Initial refresh after calendar is rendered
+		setTimeout(() => {
+			refreshCalendar();
+		}, 100);
+	}
+	
+	// Filter events function (for backward compatibility)
+	function filterEvents() {
+		refreshCalendar();
+		// If month view, also update counts
+		if (calendar && calendar.view.type === 'dayGridMonth') {
+			setTimeout(updateMonthCounts, 0);
+		}
+	}
+	
+	// Filter change handlers
+	if (typeof $ !== 'undefined') {
+		$('#filter_staff, #filter_customer, #filter_status, #filter_service, #color_by').on('change', function() {
+			filterEvents();
+		});
+	}
+	
+	// Clear filters button
+	document.getElementById('btn_clear_filters').addEventListener('click', function() {
+		if (typeof $ !== 'undefined') {
+			$('#filter_staff, #filter_customer, #filter_status, #filter_service').val(null).trigger('change');
+			$('#color_by').val('status').trigger('change');
+		}
+		filterEvents();
+	});
+});
+</script>
+{% endblock %}

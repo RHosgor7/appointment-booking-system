@@ -1,0 +1,25 @@
+# Web Framework
+fastapi==0.104.1                    # REST API framework, Swagger UI otomatik
+uvicorn[standard]==0.24.0           # ASGI server (FastAPI için)
+
+# Template Engine
+jinja2==3.1.2                       # HTML template rendering
+
+# Database (Raw SQL, ORM yok)
+aiomysql==0.2.0                     # Async MySQL driver (raw SQL için)
+
+# Authentication & Security
+python-jose[cryptography]==3.3.0    # JWT token encode/decode
+passlib[bcrypt]==1.7.4              # Password hashing (bcrypt algoritması)
+
+# Configuration
+python-dotenv==1.0.0                # .env dosyasından environment değişkenlerini okuma
+pydantic-settings==2.1.0            # Pydantic ile settings yönetimi (opsiyonel, config.py için)
+
+# Validation (FastAPI ile birlikte gelir, ama açıkça belirtelim)
+pydantic==2.5.0                     # Request/response validation
+
+# CORS (FastAPI middleware içinde, ek paket gerekmez)
+# Ancak ekstra özellikler için:
+python-multipart==0.0.6             # Form data parsing (register/login formları için)
+

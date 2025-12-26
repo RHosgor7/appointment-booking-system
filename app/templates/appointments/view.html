@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--begin::Content container-->
+<div id="kt_app_content_container" class="app-container container-xxl">
+	<!--begin::Appointment Overview-->
+	<div class="card mb-5 mb-xl-10">
+		<!--begin::Card header-->
+		<div class="card-header border-0 cursor-pointer">
+			<!--begin::Card title-->
+			<div class="card-title m-0">
+				<h3 class="fw-bold m-0">Appointment Details</h3>
+			</div>
+			<!--end::Card title-->
+			<!--begin::Action-->
+			<a href="/appointments" class="btn btn-sm btn-primary align-self-center" id="back_to_list_btn">Back to List</a>
+			<!--end::Action-->
+		</div>
+		<!--end::Card header-->
+		<!--begin::Card body-->
+		<div class="card-body p-9">
+			<!--begin::Loading-->
+			<div id="appointment_loading" class="text-center py-10">
+				<div class="spinner-border text-primary" role="status">
+					<span class="visually-hidden">Loading...</span>
+				</div>
+			</div>
+			<!--end::Loading-->
+			<!--begin::Appointment Info-->
+			<div id="appointment_info" style="display: none;">
+				<!--begin::Row-->
+				<div class="row mb-7">
+					<!--begin::Label-->
+					<label class="col-lg-4 fw-semibold text-muted">Customer</label>
+					<!--end::Label-->
+					<!--begin::Col-->
+					<div class="col-lg-8">
+						<a href="#" class="fw-bold fs-6 text-gray-800 text-hover-primary" id="appointment_customer">-</a>
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-7">
+					<!--begin::Label-->
+					<label class="col-lg-4 fw-semibold text-muted">Staff</label>
+					<!--end::Label-->
+					<!--begin::Col-->
+					<div class="col-lg-8">
+						<span class="fw-bold fs-6 text-gray-800" id="appointment_staff">-</span>
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-7">
+					<!--begin::Label-->
+					<label class="col-lg-4 fw-semibold text-muted">Date & Time</label>
+					<!--end::Label-->
+					<!--begin::Col-->
+					<div class="col-lg-8">
+						<span class="fw-bold fs-6 text-gray-800" id="appointment_date_time">-</span>
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-7">
+					<!--begin::Label-->
+					<label class="col-lg-4 fw-semibold text-muted">Status</label>
+					<!--end::Label-->
+					<!--begin::Col-->
+					<div class="col-lg-8">
+						<span class="badge" id="appointment_status">-</span>
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-7">
+					<!--begin::Label-->
+					<label class="col-lg-4 fw-semibold text-muted">Services</label>
+					<!--end::Label-->
+					<!--begin::Col-->
+					<div class="col-lg-8" id="appointment_services">
+						<!-- Services will be loaded here -->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-7">
+					<!--begin::Label-->
+					<label class="col-lg-4 fw-semibold text-muted">Total Price</label>
+					<!--end::Label-->
+					<!--begin::Col-->
+					<div class="col-lg-8">
+						<span class="fw-bold fs-3 text-primary" id="appointment_total_price">$0.00</span>
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-7">
+					<!--begin::Label-->
+					<label class="col-lg-4 fw-semibold text-muted">Notes</label>
+					<!--end::Label-->
+					<!--begin::Col-->
+					<div class="col-lg-8">
+						<span class="fw-bold fs-6 text-gray-800" id="appointment_notes">-</span>
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-7">
+					<!--begin::Label-->
+					<label class="col-lg-4 fw-semibold text-muted">Created At</label>
+					<!--end::Label-->
+					<!--begin::Col-->
+					<div class="col-lg-8">
+						<span class="fw-bold fs-6 text-gray-800" id="appointment_created_at">-</span>
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-7">
+					<!--begin::Label-->
+					<label class="col-lg-4 fw-semibold text-muted">Last Updated</label>
+					<!--end::Label-->
+					<!--begin::Col-->
+					<div class="col-lg-8">
+						<span class="fw-bold fs-6 text-gray-800" id="appointment_updated_at">-</span>
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Actions-->
+				<div class="d-flex justify-content-end mt-10" id="appointment_actions">
+					<a href="/appointments" class="btn btn-light me-3" id="back_btn">Back</a>
+					<a href="#" class="btn btn-primary" id="edit_appointment_btn">Edit Appointment</a>
+				</div>
+				<!--end::Actions-->
+			</div>
+			<!--end::Appointment Info-->
+		</div>
+		<!--end::Card body-->
+	</div>
+	<!--end::Appointment Overview-->
+</div>
+<!--end::Content container-->
+{% endblock %}
+
+{% block scripts %}
+<script>
+	"use strict";
+
+	// Token kontrolü
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		window.location.href = '/login';
+	}
+
+	// Get appointment ID from URL
+	const pathParts = window.location.pathname.split('/');
+	const appointmentId = pathParts[pathParts.length - 1];
+
+	if (!appointmentId || isNaN(appointmentId)) {
+		alert('Invalid appointment ID');
+		window.location.href = '/appointments';
+	}
+
+	// API endpoint
+	const APPOINTMENT_API = `/api/appointments/${appointmentId}?include_services=true`;
+
+	// Helper function to escape HTML
+	function escapeHtml(text) {
+		if (!text) return '';
+		const div = document.createElement('div');
+		div.textContent = text;
+		return div.innerHTML;
+	}
+
+	// Format date and time
+	function formatDateTime(dateString) {
+		if (!dateString) return '-';
+		const date = new Date(dateString);
+		return date.toLocaleString('en-US', {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit'
+		});
+	}
+
+	// Format date only
+	function formatDateOnly(dateString) {
+		if (!dateString) return '-';
+		const date = new Date(dateString);
+		return date.toLocaleDateString('en-US', {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric'
+		});
+	}
+
+	// Format currency
+	function formatCurrency(amount) {
+		if (!amount) return '$0.00';
+		const num = parseFloat(amount);
+		return '$' + num.toFixed(2);
+	}
+
+	// Get status badge class
+	function getStatusBadgeClass(status) {
+		switch(status) {
+			case 'scheduled':
+				return 'badge-light-primary';
+			case 'completed':
+				return 'badge-light-success';
+			case 'cancelled':
+				return 'badge-light-danger';
+			case 'pending':
+				return 'badge-light-warning';
+			case 'rejected':
+				return 'badge-light-danger';
+			case 'no_show':
+				return 'badge-light-info';
+			default:
+				return 'badge-light-secondary';
+		}
+	}
+
+	// Format status text
+	function formatStatus(status) {
+		return status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ');
+	}
+
+	// Load appointment details
+	async function loadAppointment() {
+		try {
+			const response = await fetch(APPOINTMENT_API, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				if (response.status === 404) {
+					alert('Appointment not found');
+					window.location.href = '/appointments';
+					return;
+				}
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const appointment = await response.json();
+			
+			// Hide loading
+			document.getElementById('appointment_loading').style.display = 'none';
+
+			// Populate appointment info
+			document.getElementById('appointment_customer').textContent = escapeHtml(appointment.customer_full_name || 'N/A');
+			document.getElementById('appointment_customer').href = `/customers/${appointment.customer_id}`;
+			document.getElementById('appointment_staff').textContent = escapeHtml(appointment.staff_full_name || 'N/A');
+			document.getElementById('appointment_date_time').textContent = formatDateTime(appointment.appointment_date);
+			
+			// Status badge
+			const statusBadge = document.getElementById('appointment_status');
+			statusBadge.textContent = formatStatus(appointment.status);
+			statusBadge.className = `badge ${getStatusBadgeClass(appointment.status)} fs-7 fw-bold`;
+
+			// Services
+			const servicesContainer = document.getElementById('appointment_services');
+			if (appointment.services && appointment.services.length > 0) {
+				let servicesHtml = '';
+				let totalPrice = 0;
+				appointment.services.forEach(service => {
+					const price = parseFloat(service.price || 0);
+					totalPrice += price;
+					servicesHtml += `
+						<div class="mb-2">
+							<span class="badge badge-light-info me-2">${escapeHtml(service.name)}</span>
+							<span class="text-gray-600">${service.duration_minutes} min - ${formatCurrency(service.price)}</span>
+						</div>
+					`;
+				});
+				servicesContainer.innerHTML = servicesHtml;
+				document.getElementById('appointment_total_price').textContent = formatCurrency(totalPrice);
+			} else {
+				servicesContainer.innerHTML = '<span class="text-gray-500">No services</span>';
+				document.getElementById('appointment_total_price').textContent = formatCurrency(0);
+			}
+
+			// Notes
+			document.getElementById('appointment_notes').textContent = escapeHtml(appointment.notes || '-');
+			document.getElementById('appointment_created_at').textContent = formatDateTime(appointment.created_at);
+			document.getElementById('appointment_updated_at').textContent = formatDateTime(appointment.updated_at);
+
+			// Edit button
+			document.getElementById('edit_appointment_btn').href = `/appointments/${appointmentId}/edit`;
+
+			// Handle pending/rejected status
+			if (appointment.status === 'pending' || appointment.status === 'rejected') {
+				// Hide Back and Edit buttons
+				document.getElementById('appointment_actions').style.display = 'none';
+				// Change "Back to List" to point to appointment-requests
+				document.getElementById('back_to_list_btn').href = '/appointment-requests';
+				document.getElementById('back_to_list_btn').textContent = 'Back to Appointment Requests';
+			} else {
+				// Show Back and Edit buttons for other statuses
+				document.getElementById('appointment_actions').style.display = 'flex';
+				// Keep "Back to List" pointing to appointments list
+				document.getElementById('back_to_list_btn').href = '/appointments';
+				document.getElementById('back_to_list_btn').textContent = 'Back to List';
+			}
+
+			// Show appointment info
+			document.getElementById('appointment_info').style.display = 'block';
+
+		} catch (error) {
+			console.error('Error loading appointment:', error);
+			document.getElementById('appointment_loading').style.display = 'none';
+			alert('Error loading appointment. Please refresh the page.');
+		}
+	}
+
+	// Load data on page load
+	document.addEventListener('DOMContentLoaded', function() {
+		loadAppointment();
+	});
+</script>
+{% endblock %}
+

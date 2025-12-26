@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--begin::Content container-->
+<div id="kt_app_content_container" class="app-container container-xxl">
+	<!--begin::Card-->
+	<div class="card">
+		<!--begin::Card header-->
+		<div class="card-header border-0 pt-6">
+			<!--begin::Card title-->
+			<div class="card-title">
+				<h2 class="fw-bold">Business Settings</h2>
+			</div>
+			<!--end::Card title-->
+		</div>
+		<!--end::Card header-->
+		<!--begin::Card body-->
+		<div class="card-body pt-0">
+			<!--begin::Form-->
+			<form class="form" id="kt_business_settings_form">
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Slot Length (minutes)</label>
+							<input type="number" class="form-control form-control-solid" name="slot_length_minutes" placeholder="Enter slot length" min="1" required />
+							<div class="form-text">Default duration for appointment slots</div>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Buffer Time (minutes)</label>
+							<input type="number" class="form-control form-control-solid" name="buffer_time_minutes" placeholder="Enter buffer time" min="0" required />
+							<div class="form-text">Time between appointments</div>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Cancellation Hours</label>
+							<input type="number" class="form-control form-control-solid" name="cancellation_hours" placeholder="Enter cancellation hours" min="0" required />
+							<div class="form-text">Minimum hours before cancellation</div>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Timezone</label>
+							<select class="form-select form-select-solid" name="timezone" required>
+								<option value="UTC">UTC</option>
+								<option value="Europe/Istanbul" selected>Europe/Istanbul</option>
+								<option value="America/New_York">America/New_York</option>
+								<option value="America/Los_Angeles">America/Los_Angeles</option>
+								<option value="Europe/London">Europe/London</option>
+								<option value="Asia/Tokyo">Asia/Tokyo</option>
+								<option value="Australia/Sydney">Australia/Sydney</option>
+							</select>
+							<div class="form-text">Business timezone</div>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Working Hours Start</label>
+							<input type="time" class="form-control form-control-solid" name="working_hours_start" required />
+							<div class="form-text">Start time for working hours</div>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Working Hours End</label>
+							<input type="time" class="form-control form-control-solid" name="working_hours_end" required />
+							<div class="form-text">End time for working hours</div>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Actions-->
+				<div class="d-flex justify-content-end">
+					<button type="submit" class="btn btn-primary" id="kt_business_settings_submit">
+						<span class="indicator-label">Save Changes</span>
+						<span class="indicator-progress">Please wait...
+							<span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+						</span>
+					</button>
+				</div>
+				<!--end::Actions-->
+			</form>
+			<!--end::Form-->
+		</div>
+		<!--end::Card body-->
+	</div>
+	<!--end::Card-->
+</div>
+<!--end::Content container-->
+{% endblock %}
+
+{% block scripts %}
+<script>
+	"use strict";
+
+	// Token kontrolü
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		window.location.href = '/login';
+	}
+
+	// API base URLs
+	const SETTINGS_API = '/api/settings';
+	const BUSINESS_API = '/api/businesses/me';
+
+	// Load settings function
+	async function loadSettings() {
+		try {
+			const response = await fetch(SETTINGS_API, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const settings = await response.json();
+			const form = document.getElementById('kt_business_settings_form');
+
+			// Fill form with settings data
+			if (settings.slot_length_minutes !== undefined) {
+				form.slot_length_minutes.value = settings.slot_length_minutes;
+			}
+			if (settings.buffer_time_minutes !== undefined) {
+				form.buffer_time_minutes.value = settings.buffer_time_minutes;
+			}
+			if (settings.cancellation_hours !== undefined) {
+				form.cancellation_hours.value = settings.cancellation_hours;
+			}
+			if (settings.timezone) {
+				form.timezone.value = settings.timezone;
+			}
+			
+			// Time fields - convert time object/string to HH:MM format
+			if (settings.working_hours_start) {
+				let startTime = '';
+				if (typeof settings.working_hours_start === 'string') {
+					// "HH:MM:SS" or "HH:MM" -> "HH:MM"
+					startTime = settings.working_hours_start.substring(0, 5);
+				} else if (settings.working_hours_start.hour !== undefined) {
+					// time object from Pydantic (dict format)
+					const h = String(settings.working_hours_start.hour).padStart(2, '0');
+					const m = String(settings.working_hours_start.minute || 0).padStart(2, '0');
+					startTime = `${h}:${m}`;
+				} else if (settings.working_hours_start instanceof Object) {
+					// Try to extract from object
+					const h = String(settings.working_hours_start.hour || settings.working_hours_start[0] || 9).padStart(2, '0');
+					const m = String(settings.working_hours_start.minute || settings.working_hours_start[1] || 0).padStart(2, '0');
+					startTime = `${h}:${m}`;
+				}
+				if (startTime) {
+					form.working_hours_start.value = startTime;
+				}
+			}
+			if (settings.working_hours_end) {
+				let endTime = '';
+				if (typeof settings.working_hours_end === 'string') {
+					// "HH:MM:SS" or "HH:MM" -> "HH:MM"
+					endTime = settings.working_hours_end.substring(0, 5);
+				} else if (settings.working_hours_end.hour !== undefined) {
+					// time object from Pydantic (dict format)
+					const h = String(settings.working_hours_end.hour).padStart(2, '0');
+					const m = String(settings.working_hours_end.minute || 0).padStart(2, '0');
+					endTime = `${h}:${m}`;
+				} else if (settings.working_hours_end instanceof Object) {
+					// Try to extract from object
+					const h = String(settings.working_hours_end.hour || settings.working_hours_end[0] || 18).padStart(2, '0');
+					const m = String(settings.working_hours_end.minute || settings.working_hours_end[1] || 0).padStart(2, '0');
+					endTime = `${h}:${m}`;
+				}
+				if (endTime) {
+					form.working_hours_end.value = endTime;
+				}
+			}
+			
+			// Debug: Log settings to see what we're getting
+			console.log('Loaded settings:', settings);
+			console.log('working_hours_start:', settings.working_hours_start, typeof settings.working_hours_start);
+			console.log('working_hours_end:', settings.working_hours_end, typeof settings.working_hours_end);
+
+		} catch (error) {
+			console.error('Error loading settings:', error);
+			alert('Error loading settings. Please refresh the page.');
+		}
+	}
+
+	// Form submit handler
+	document.getElementById('kt_business_settings_form')?.addEventListener('submit', async function(e) {
+		e.preventDefault();
+		
+		const form = e.target;
+		const submitButton = document.getElementById('kt_business_settings_submit');
+		const indicator = submitButton.querySelector('.indicator-label');
+		const progress = submitButton.querySelector('.indicator-progress');
+		
+		// Show loading state
+		submitButton.disabled = true;
+		indicator.style.display = 'none';
+		progress.style.display = 'inline-block';
+
+		// Prepare form data
+		const formData = {
+			slot_length_minutes: parseInt(form.slot_length_minutes.value),
+			buffer_time_minutes: parseInt(form.buffer_time_minutes.value),
+			cancellation_hours: parseInt(form.cancellation_hours.value),
+			timezone: form.timezone.value,
+			working_hours_start: form.working_hours_start.value + ':00', // Add seconds
+			working_hours_end: form.working_hours_end.value + ':00' // Add seconds
+		};
+
+		try {
+			const response = await fetch(SETTINGS_API, {
+				method: 'PUT',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(formData)
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				const errorData = await response.json();
+				throw new Error(errorData.detail || 'Failed to update settings');
+			}
+
+			// Show success message
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Settings updated successfully!",
+					icon: "success",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				});
+			} else {
+				alert('Settings updated successfully!');
+			}
+
+		} catch (error) {
+			console.error('Error updating settings:', error);
+			alert('Error: ' + error.message);
+		} finally {
+			// Hide loading state
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+		}
+	});
+
+	// Load settings on page load
+	document.addEventListener('DOMContentLoaded', function() {
+		loadSettings();
+	});
+</script>
+{% endblock %}
+

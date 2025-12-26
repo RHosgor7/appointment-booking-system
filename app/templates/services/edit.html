@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--begin::Content container-->
+<div id="kt_app_content_container" class="app-container container-xxl">
+	<!--begin::Card-->
+	<div class="card">
+		<!--begin::Card header-->
+		<div class="card-header border-0 pt-6">
+			<!--begin::Card title-->
+			<div class="card-title">
+				<h2 class="fw-bold">Edit Service</h2>
+			</div>
+			<!--end::Card title-->
+		</div>
+		<!--end::Card header-->
+		<!--begin::Card body-->
+		<div class="card-body pt-0">
+			<!--begin::Loading-->
+			<div id="service_loading" class="text-center py-10">
+				<div class="spinner-border text-primary" role="status">
+					<span class="visually-hidden">Loading...</span>
+				</div>
+			</div>
+			<!--end::Loading-->
+			<!--begin::Form-->
+			<form class="form" id="kt_service_edit_form" style="display: none;">
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-12">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Service Name</label>
+							<input type="text" class="form-control form-control-solid" name="name" placeholder="Enter service name" required />
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-12">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label">Description</label>
+							<textarea class="form-control form-control-solid" name="description" rows="3" placeholder="Enter service description"></textarea>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Duration (minutes)</label>
+							<input type="number" class="form-control form-control-solid" name="duration_minutes" placeholder="30" min="1" required />
+							<div class="form-text">Service duration in minutes</div>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Price</label>
+							<div class="input-group input-group-solid">
+								<span class="input-group-text">$</span>
+								<input type="number" class="form-control form-control-solid" name="price" placeholder="0.00" step="0.01" min="0" required />
+							</div>
+							<div class="form-text">Service price in USD</div>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-12">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-check form-check-custom form-check-solid">
+								<input class="form-check-input" type="checkbox" name="is_active" value="1" />
+								<span class="form-check-label fw-semibold">Active</span>
+							</label>
+							<div class="form-text">Inactive services cannot be selected when creating appointments</div>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Actions-->
+				<div class="d-flex justify-content-end">
+					<a href="/services" class="btn btn-light me-3">Cancel</a>
+					<a href="#" class="btn btn-light me-3" id="view_service_btn">View</a>
+					<button type="submit" class="btn btn-primary" id="kt_service_edit_submit">
+						<span class="indicator-label">Update Service</span>
+						<span class="indicator-progress">Please wait...
+							<span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+						</span>
+					</button>
+				</div>
+				<!--end::Actions-->
+			</form>
+			<!--end::Form-->
+		</div>
+		<!--end::Card body-->
+	</div>
+	<!--end::Card-->
+</div>
+<!--end::Content container-->
+{% endblock %}
+
+{% block scripts %}
+<script>
+	"use strict";
+
+	// Token kontrolü
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		window.location.href = '/login';
+	}
+
+	// Get service ID from URL
+	const pathParts = window.location.pathname.split('/');
+	const serviceId = pathParts[pathParts.length - 1];
+
+	if (!serviceId || isNaN(serviceId)) {
+		alert('Invalid service ID');
+		window.location.href = '/services';
+	}
+
+	// API endpoint
+	const SERVICE_API = `/api/services/${serviceId}`;
+
+	// Load service
+	async function loadService() {
+		try {
+			const response = await fetch(SERVICE_API, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				if (response.status === 404) {
+					alert('Service not found');
+					window.location.href = '/services';
+					return;
+				}
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const service = await response.json();
+			
+			// Hide loading, show form
+			document.getElementById('service_loading').style.display = 'none';
+			document.getElementById('kt_service_edit_form').style.display = 'block';
+
+			// Populate form
+			document.querySelector('input[name="name"]').value = service.name || '';
+			document.querySelector('textarea[name="description"]').value = service.description || '';
+			document.querySelector('input[name="duration_minutes"]').value = service.duration_minutes || '';
+			document.querySelector('input[name="price"]').value = parseFloat(service.price || 0).toFixed(2);
+			document.querySelector('input[name="is_active"]').checked = service.is_active || false;
+			
+			// View button (not implemented yet, but link ready)
+			// document.getElementById('view_service_btn').href = `/services/${serviceId}`;
+
+		} catch (error) {
+			console.error('Error loading service:', error);
+			document.getElementById('service_loading').style.display = 'none';
+			alert('Error loading service. Please refresh the page.');
+		}
+	}
+
+	// Form submit handler
+	document.getElementById('kt_service_edit_form')?.addEventListener('submit', async function(e) {
+		e.preventDefault();
+		
+		const form = e.target;
+		const submitButton = document.getElementById('kt_service_edit_submit');
+		const indicator = submitButton.querySelector('.indicator-label');
+		const progress = submitButton.querySelector('.indicator-progress');
+		
+		// Show loading state
+		submitButton.disabled = true;
+		indicator.style.display = 'none';
+		progress.style.display = 'inline-block';
+
+		// Get form data
+		const formData = {
+			name: form.name.value.trim(),
+			description: form.description.value.trim() || null,
+			duration_minutes: parseInt(form.duration_minutes.value),
+			price: parseFloat(form.price.value),
+			is_active: form.is_active.checked
+		};
+
+		// Validation
+		if (!formData.name) {
+			alert('Service name is required');
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+			return;
+		}
+
+		if (formData.duration_minutes < 1) {
+			alert('Duration must be at least 1 minute');
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+			return;
+		}
+
+		if (formData.price < 0) {
+			alert('Price cannot be negative');
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+			return;
+		}
+
+		try {
+			const response = await fetch(SERVICE_API, {
+				method: 'PUT',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(formData)
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				const errorData = await response.json();
+				throw new Error(errorData.detail || 'Failed to update service');
+			}
+
+			// Show success message and redirect
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Service updated successfully!",
+					icon: "success",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				}).then(() => {
+					window.location.href = '/services';
+				});
+			} else {
+				alert('Service updated successfully!');
+				window.location.href = '/services';
+			}
+
+		} catch (error) {
+			console.error('Error updating service:', error);
+			alert('Error: ' + error.message);
+		} finally {
+			// Hide loading state
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+		}
+	});
+
+	// Load data on page load
+	document.addEventListener('DOMContentLoaded', function() {
+		loadService();
+	});
+</script>
+{% endblock %}
+

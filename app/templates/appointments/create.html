@@ -1,0 +1,711 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--begin::Content container-->
+<div id="kt_app_content_container" class="app-container container-xxl">
+	<!--begin::Form-->
+	<form class="form" id="kt_appointment_create_form">
+		<!--begin::Row-->
+		<div class="row">
+			<!--begin::Aside column (Left sidebar)-->
+			<div class="col-lg-4 mb-7 mb-lg-0">
+				<!--begin::Status Card-->
+				<div class="card card-flush py-4">
+					<!--begin::Card header-->
+					<div class="card-header">
+						<div class="card-title">
+							<h2>Status & Notes</h2>
+						</div>
+						<div class="card-toolbar">
+							<div class="rounded-circle bg-primary w-15px h-15px" id="kt_ecommerce_add_product_status"></div>
+						</div>
+					</div>
+					<!--end::Card header-->
+					<!--begin::Card body-->
+					<div class="card-body pt-0">
+						<div class="d-flex flex-column gap-10">
+							<!--begin::Status-->
+							<div class="fv-row">
+								<label class="required form-label">Status</label>
+								<select class="form-select mb-2" data-control="select2" data-hide-search="true" name="status" id="appointment_status" disabled>
+									<option value="scheduled" selected>Scheduled</option>
+								</select>
+							</div>
+							<!--end::Status-->
+							<!--begin::Admin Note-->
+							<div class="fv-row">
+								<label class="form-label">Admin Note</label>
+								<textarea class="form-control form-control-solid" name="admin_note" id="admin_note" rows="4" placeholder="Enter admin note"></textarea>
+								<div class="text-muted fs-7">Internal note visible to admins only</div>
+							</div>
+							<!--end::Admin Note-->
+							<!--begin::Staff Note-->
+							<div class="fv-row">
+								<label class="form-label">Staff Note</label>
+								<textarea class="form-control form-control-solid" name="staff_note" id="staff_note" rows="4" placeholder="Enter staff note"></textarea>
+								<div class="text-muted fs-7">Note visible to staff members</div>
+							</div>
+							<!--end::Staff Note-->
+						</div>
+					</div>
+					<!--end::Card body-->
+				</div>
+				<!--end::Status Card-->
+			</div>
+			<!--end::Aside column-->
+			<!--begin::Main column (Right content)-->
+			<div class="col-lg-8">
+				<div class="card card-flush py-4 mb-10">
+					<!--begin::Card header-->
+					<div class="card-header">
+						<div class="card-title">
+							<h2>Appointment Details</h2>
+						</div>
+					</div>
+					<!--end::Card header-->
+					<div class="card-body pt-0">
+						<!--begin::Customer & Staff-->
+						<div class="row mb-10">
+							<!--begin::Col-->
+							<div class="col-lg-6">
+								<!--begin::Input group-->
+								<div class="mb-10">
+									<label class="form-label required">Customer</label>
+									<select class="form-select form-select-solid" name="customer_id" id="customer_select" data-control="select2" data-kt-select2="true" required>
+										<!-- Options will be loaded via AJAX -->
+									</select>
+								</div>
+								<!--end::Input group-->
+							</div>
+							<!--end::Col-->
+							<!--begin::Col-->
+							<div class="col-lg-6">
+								<!--begin::Input group-->
+								<div class="mb-10">
+									<label class="form-label required">Staff</label>
+									<select class="form-select form-select-solid" name="staff_id" id="staff_select" data-control="select2" data-kt-select2="true" required>
+										<!-- Options will be loaded via AJAX -->
+									</select>
+								</div>
+								<!--end::Input group-->
+							</div>
+							<!--end::Col-->
+						</div>
+						<!--end::Customer & Staff-->
+						
+						<!--begin::Date & Time-->
+						<div class="row mb-5">
+							<!--begin::Col-->
+							<div class="col-lg-6">
+								<!--begin::Input group-->
+								<div class="mb-10">
+									<label class="form-label required">Date</label>
+									<input type="date" class="form-control form-control-solid" name="appointment_date" id="appointment_date" required />
+								</div>
+								<!--end::Input group-->
+							</div>
+							<!--end::Col-->
+							<!--begin::Col-->
+							<div class="col-lg-6">
+								<!--begin::Input group-->
+								<div class="mb-10">
+									<label class="form-label required">Time</label>
+									<input type="time" class="form-control form-control-solid" name="appointment_time" id="appointment_time" required readonly />
+									<div class="form-text">Select time from available slots above</div>
+								</div>
+								<!--end::Input group-->
+							</div>
+							<!--end::Col-->
+						</div>
+						<!--end::Date & Time-->
+
+						<!--begin::Available Slots-->
+						<div class="row mb-10" id="available_slots_section">
+							<!--begin::Col-->
+							<div class="col-lg-12">
+								<!--begin::Card-->
+								<div class="card card-flush">
+									<!--begin::Card header-->
+									<div class="card-header">
+										<div class="card-title">
+											<h3 class="fw-bold">Available Time Slots</h3>
+										</div>
+									</div>
+									<!--end::Card header-->
+									<!--begin::Card body-->
+									<div class="card-body pt-0">
+										<div id="available_slots_container" class="d-flex flex-wrap gap-3">
+											<!-- Available slots will be loaded here -->
+										</div>
+										<div id="available_slots_loading" class="text-center py-5" style="display: none;">
+											<div class="spinner-border text-primary" role="status">
+												<span class="visually-hidden">Loading...</span>
+											</div>
+										</div>
+										<div id="available_slots_empty" class="text-center py-5 text-gray-500" style="display: none;">
+											No available slots for selected date and staff
+										</div>
+									</div>
+									<!--end::Card body-->
+								</div>
+								<!--end::Card-->
+							</div>
+							<!--end::Col-->
+						</div>
+						<!--end::Available Slots-->
+						
+						<!--begin::Services-->
+						<div class="row mb-10">
+							<!--begin::Col-->
+							<div class="col-lg-12">
+								<!--begin::Input group-->
+								<div class="mb-10">
+									<label class="form-label required">Services</label>
+									<select class="form-select mb-2" data-control="select2" data-placeholder="Select services" data-allow-clear="true" name="service_ids" id="service_select" multiple required>
+										<!-- Options will be loaded via JavaScript -->
+									</select>
+									<div class="text-muted fs-7">Add services to this appointment.</div>
+								</div>
+								<!--end::Input group-->
+							</div>
+							<!--end::Col-->
+						</div>
+						<!--end::Services-->
+						
+						<!--begin::Customer Note-->
+						<div class="row mb-10">
+							<!--begin::Col-->
+							<div class="col-lg-12">
+								<!--begin::Input group-->
+								<div class="mb-10">
+									<label class="form-label">Customer Note</label>
+									<textarea class="form-control form-control-solid" name="customer_note" id="customer_note" rows="3" placeholder="Enter customer note"></textarea>
+									<div class="text-muted fs-7">Note visible to customer</div>
+								</div>
+								<!--end::Input group-->
+							</div>
+							<!--end::Col-->
+						</div>
+						<!--end::Customer Note-->
+					</div>
+				</div>
+				<!--begin::Actions-->
+				<div class="d-flex justify-content-end">
+					<a href="/appointments" class="btn btn-light me-3">Cancel</a>
+					<button type="submit" class="btn btn-primary" id="kt_appointment_create_submit">
+						<span class="indicator-label">Create Appointment</span>
+						<span class="indicator-progress">Please wait...
+							<span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+						</span>
+					</button>
+				</div>
+				<!--end::Actions-->
+			</div>
+			<!--end::Main column-->
+		</div>
+		<!--end::Row-->
+	</form>
+	<!--end::Form-->
+</div>
+<!--end::Content container-->
+{% endblock %}
+
+{% block scripts %}
+<script>
+	"use strict";
+
+	// Token kontrolü
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		window.location.href = '/login';
+	}
+
+	// API base URLs
+	const CUSTOMERS_API = '/api/customers';
+	const STAFF_API = '/api/staff';
+	const SERVICES_API = '/api/services';
+	const APPOINTMENTS_API = '/api/appointments';
+	const AVAILABLE_SLOTS_API = '/api/appointments/available-slots';
+
+	// State
+	let services = [];
+
+	// Initialize Select2 with AJAX remote search for Customer
+	function initCustomerSelect2() {
+		const $customerSelect = $('#customer_select');
+		
+		// Destroy existing Select2 if any
+		if ($customerSelect.hasClass('select2-hidden-accessible')) {
+			$customerSelect.select2('destroy');
+		}
+		
+		// Clear options
+		$customerSelect.empty();
+		
+		$customerSelect.select2({
+			placeholder: 'Search for a customer...',
+			minimumInputLength: 1,
+			ajax: {
+				url: CUSTOMERS_API,
+				dataType: 'json',
+				delay: 250,
+				data: function (params) {
+					return {
+						search: params.term // search term
+					};
+				},
+				processResults: function (data) {
+					return {
+						results: data.map(function(customer) {
+							return {
+								id: customer.id,
+								text: `${customer.full_name} (${customer.email})`
+							};
+						})
+					};
+				},
+				cache: true,
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			}
+		});
+	}
+
+	// Initialize Select2 with AJAX remote search for Staff
+	function initStaffSelect2() {
+		const $staffSelect = $('#staff_select');
+		
+		// Destroy existing Select2 if any
+		if ($staffSelect.hasClass('select2-hidden-accessible')) {
+			$staffSelect.select2('destroy');
+		}
+		
+		// Clear options
+		$staffSelect.empty();
+		
+		$staffSelect.select2({
+			placeholder: 'Search for a staff member...',
+			minimumInputLength: 1,
+			ajax: {
+				url: STAFF_API,
+				dataType: 'json',
+				delay: 250,
+				data: function (params) {
+					return {
+						search: params.term // search term
+					};
+				},
+				processResults: function (data) {
+					return {
+						results: data.filter(function(staff) {
+							return staff.is_active;
+						}).map(function(staff) {
+							return {
+								id: staff.id,
+								text: staff.full_name
+							};
+						})
+					};
+				},
+				cache: true,
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			}
+		});
+	}
+
+	// Load services
+	async function loadServices() {
+		try {
+			const response = await fetch(SERVICES_API, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			services = await response.json();
+			const select = document.getElementById('service_select');
+			
+			// Clear existing options
+			select.innerHTML = '';
+			
+			// Add services (only active)
+			services.filter(s => s.is_active).forEach(service => {
+				const option = document.createElement('option');
+				option.value = service.id;
+				option.textContent = `${service.name} (${service.duration_minutes} min - $${parseFloat(service.price).toFixed(2)})`;
+				select.appendChild(option);
+			});
+			
+			// Initialize Select2 for services if not already initialized
+			if (typeof $ !== 'undefined' && $.fn.select2) {
+				if (!$(select).hasClass('select2-hidden-accessible')) {
+					$(select).select2({
+						placeholder: 'Select services',
+						allowClear: true
+					});
+				}
+			}
+		} catch (error) {
+			console.error('Error loading services:', error);
+			alert('Error loading services. Please refresh the page.');
+		}
+	}
+
+	// Update status circle color based on status
+	function updateStatusCircleColor(status) {
+		const statusCircle = document.getElementById('kt_ecommerce_add_product_status');
+		if (!statusCircle) return;
+		
+		// Remove all color classes
+		statusCircle.classList.remove('bg-success', 'bg-warning', 'bg-primary', 'bg-danger', 'bg-info');
+		
+		// Add appropriate color class based on status
+		switch(status) {
+			case 'scheduled':
+				statusCircle.classList.add('bg-primary');
+				break;
+			case 'completed':
+				statusCircle.classList.add('bg-success');
+				break;
+			case 'cancelled':
+				statusCircle.classList.add('bg-danger');
+				break;
+			case 'no_show':
+				statusCircle.classList.add('bg-info');
+				break;
+			default:
+				statusCircle.classList.add('bg-primary');
+		}
+	}
+
+	// Load available slots
+	async function loadAvailableSlots() {
+		// Create page always uses 'scheduled' status
+		const staffId = document.getElementById('staff_select').value;
+		const date = document.getElementById('appointment_date').value;
+		
+		// Always show the section, even if staff or date is not selected
+		document.getElementById('available_slots_section').style.display = 'block';
+		
+		if (!staffId || !date) {
+			// Show empty message if staff or date is not selected
+			document.getElementById('available_slots_loading').style.display = 'none';
+			document.getElementById('available_slots_container').innerHTML = '';
+			document.getElementById('available_slots_empty').style.display = 'block';
+			document.getElementById('available_slots_empty').textContent = 'Please select staff and date to see available slots';
+			return;
+		}
+		
+		// Get selected services
+		let selectedServices = [];
+		const serviceSelect = document.getElementById('service_select');
+		if (serviceSelect) {
+			if (typeof $ !== 'undefined' && $(serviceSelect).hasClass('select2-hidden-accessible')) {
+				selectedServices = $(serviceSelect).val() || [];
+				selectedServices = selectedServices.map(id => parseInt(id)).filter(id => !isNaN(id));
+			} else {
+				selectedServices = Array.from(serviceSelect.selectedOptions).map(opt => parseInt(opt.value)).filter(id => !isNaN(id));
+			}
+		}
+
+		// Show loading
+		document.getElementById('available_slots_section').style.display = 'block';
+		document.getElementById('available_slots_loading').style.display = 'block';
+		document.getElementById('available_slots_container').innerHTML = '';
+		document.getElementById('available_slots_empty').style.display = 'none';
+
+		try {
+			// Build query params
+			let url = `${AVAILABLE_SLOTS_API}?staff_id=${staffId}&date=${date}`;
+			if (selectedServices.length > 0) {
+				// FastAPI List[int] query parameter format: service_ids=1&service_ids=2
+				selectedServices.forEach(serviceId => {
+					url += `&service_ids=${serviceId}`;
+				});
+			}
+
+			const response = await fetch(url, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				
+				// Try to get error detail from response
+				let errorMessage = `HTTP error! status: ${response.status}`;
+				try {
+					const errorData = await response.json();
+					if (errorData.detail) {
+						errorMessage = errorData.detail;
+					}
+				} catch (e) {
+					// If JSON parse fails, try text
+					try {
+						const errorText = await response.text();
+						if (errorText) {
+							errorMessage = errorText;
+						}
+					} catch (e2) {
+						// Ignore text parse errors
+					}
+				}
+				
+				const error = new Error(errorMessage);
+				throw error;
+			}
+
+			const result = await response.json();
+			const availableSlots = result.available_slots || [];
+
+			// Hide loading
+			document.getElementById('available_slots_loading').style.display = 'none';
+
+			if (availableSlots.length === 0) {
+				document.getElementById('available_slots_empty').style.display = 'block';
+				return;
+			}
+
+			// Display available slots
+			const container = document.getElementById('available_slots_container');
+			container.innerHTML = '';
+
+			availableSlots.forEach(slot => {
+				const slotDate = new Date(slot);
+				const timeStr = slotDate.toLocaleTimeString('en-US', {
+					hour: '2-digit',
+					minute: '2-digit',
+					hour12: false
+				});
+
+				const button = document.createElement('button');
+				button.type = 'button';
+				button.className = 'btn btn-light-primary btn-sm slot-button';
+				button.textContent = timeStr;
+				button.dataset.slot = slot;
+				button.addEventListener('click', function() {
+					// Remove active class from all buttons
+					document.querySelectorAll('.slot-button').forEach(btn => {
+						btn.classList.remove('btn-primary');
+						btn.classList.add('btn-light-primary');
+					});
+					// Add active class to clicked button
+					this.classList.remove('btn-light-primary');
+					this.classList.add('btn-primary');
+					// Set time input
+					document.getElementById('appointment_time').value = timeStr;
+				});
+
+				container.appendChild(button);
+			});
+
+		} catch (error) {
+			console.error('Error loading available slots:', error);
+			document.getElementById('available_slots_loading').style.display = 'none';
+			document.getElementById('available_slots_empty').style.display = 'block';
+			
+			// Show the API error detail in the empty message
+			const errorMessage = error.message || 'Error loading available slots';
+			document.getElementById('available_slots_empty').textContent = `Error: ${errorMessage}`;
+		}
+	}
+
+	// Event listeners
+	document.getElementById('staff_select')?.addEventListener('change', function() {
+		// Always load available slots (will show empty message if date not selected)
+		loadAvailableSlots();
+	});
+
+	document.getElementById('appointment_date')?.addEventListener('change', function() {
+		// Set minimum date to today
+		const today = new Date().toISOString().split('T')[0];
+		if (this.value < today) {
+			alert('Please select a future date');
+			this.value = today;
+			return;
+		}
+		// Always load available slots (will show empty message if staff not selected)
+		loadAvailableSlots();
+	});
+
+	document.getElementById('service_select')?.addEventListener('change', function() {
+		// Reload available slots when services change (duration affects slots)
+		// Will show empty message if staff or date not selected
+		loadAvailableSlots();
+	});
+
+	// Form submit handler
+	document.getElementById('kt_appointment_create_form')?.addEventListener('submit', async function(e) {
+		e.preventDefault();
+		
+		const form = e.target;
+		const submitButton = document.getElementById('kt_appointment_create_submit');
+		const indicator = submitButton.querySelector('.indicator-label');
+		const progress = submitButton.querySelector('.indicator-progress');
+		
+		// Show loading state
+		submitButton.disabled = true;
+		indicator.style.display = 'none';
+		progress.style.display = 'inline-block';
+
+		// Get selected services (works with both Select2 and regular select)
+		const serviceSelect = document.getElementById('service_select');
+		let selectedServices = [];
+		
+		if (typeof $ !== 'undefined' && $(serviceSelect).hasClass('select2-hidden-accessible')) {
+			// Select2 is initialized, use Select2 method
+			selectedServices = $(serviceSelect).val() || [];
+			selectedServices = selectedServices.map(id => parseInt(id));
+		} else {
+			// Regular select
+			selectedServices = Array.from(serviceSelect.selectedOptions).map(opt => parseInt(opt.value));
+		}
+
+		if (selectedServices.length === 0) {
+			alert('Please select at least one service');
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+			return;
+		}
+
+		// Combine date and time
+		const date = form.appointment_date.value;
+		const time = form.appointment_time.value;
+		const appointmentDateTime = `${date}T${time}:00`;
+		
+		// Get admin_note, staff_note, and customer_note, convert empty strings to null
+		const adminNote = form.admin_note.value.trim();
+		const staffNote = form.staff_note.value.trim();
+		const customerNote = form.customer_note ? form.customer_note.value.trim() : '';
+		
+		// Status is always 'scheduled' for new appointments
+		const status = 'scheduled';
+		
+		const formData = {
+			customer_id: parseInt(form.customer_id.value),
+			staff_id: parseInt(form.staff_id.value),
+			appointment_date: appointmentDateTime,
+			service_ids: selectedServices,
+			status: status,
+			admin_note: adminNote || null,
+			staff_note: staffNote || null,
+			customer_note: customerNote || null
+		};
+		
+		// Log formData for debugging
+		console.log('Submitting form data:', formData);
+
+		try {
+			const response = await fetch(APPOINTMENTS_API, {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(formData)
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				const errorData = await response.json();
+				throw new Error(errorData.detail || 'Failed to create appointment');
+			}
+
+			// Show success message and redirect
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Appointment created successfully!",
+					icon: "success",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				}).then(() => {
+					window.location.href = '/appointments';
+				});
+			} else {
+				alert('Appointment created successfully!');
+				window.location.href = '/appointments';
+			}
+
+		} catch (error) {
+			console.error('Error creating appointment:', error);
+			alert('Error: ' + error.message);
+		} finally {
+			// Hide loading state
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+		}
+	});
+
+	// Set minimum date to today
+	const dateInput = document.getElementById('appointment_date');
+	if (dateInput) {
+		const today = new Date().toISOString().split('T')[0];
+		dateInput.setAttribute('min', today);
+	}
+
+	// Initialize status Select2 on page load (disabled, always scheduled)
+	function initStatusSelect2() {
+		const statusSelect = document.getElementById('appointment_status');
+		if (statusSelect && typeof $ !== 'undefined' && $.fn.select2) {
+			if (!$(statusSelect).hasClass('select2-hidden-accessible')) {
+				$(statusSelect).select2({
+					minimumResultsForSearch: Infinity
+				});
+			}
+			// Ensure it's disabled
+			$(statusSelect).prop('disabled', true);
+		}
+	}
+
+	// Load data on page load
+	document.addEventListener('DOMContentLoaded', async function() {
+		// Initialize status Select2 first (disabled, always scheduled)
+		initStatusSelect2();
+		
+		// Initialize status circle color (always scheduled for new appointments)
+		updateStatusCircleColor('scheduled');
+		
+		// Initialize Select2 for customer and staff
+		initCustomerSelect2();
+		initStaffSelect2();
+		
+		// Load services
+		await loadServices();
+		
+		// Show available slots section on page load (will show empty message if staff/date not selected)
+		loadAvailableSlots();
+	});
+</script>
+{% endblock %}

@@ -1,0 +1,724 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--begin::Content container-->
+<div id="kt_app_content_container" class="app-container container-xxl">
+	<!--begin::Card-->
+	<div class="card">
+		<!--begin::Card header-->
+		<div class="card-header border-0 pt-6">
+			<!--begin::Card title-->
+			<div class="card-title">
+				<h2 class="fw-bold">Edit Booking Link</h2>
+			</div>
+			<!--end::Card title-->
+		</div>
+		<!--end::Card header-->
+		<!--begin::Card body-->
+		<div class="card-body pt-0">
+			<!--begin::Form-->
+			<form class="form" id="kt_booking_link_edit_form">
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-12">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label required">Link Name</label>
+							<input type="text" class="form-control form-control-solid" name="name" placeholder="Enter booking link name" required />
+							<div class="form-text">This name helps you identify the link in your list</div>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-12">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label">Description</label>
+							<textarea class="form-control form-control-solid" name="description" rows="3" placeholder="Enter description (optional)"></textarea>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label">Services</label>
+							<div class="form-check mb-3">
+								<input class="form-check-input" type="radio" name="service_filter" id="service_all" value="all">
+								<label class="form-check-label" for="service_all">All Services</label>
+							</div>
+							<div class="form-check mb-3">
+								<input class="form-check-input" type="radio" name="service_filter" id="service_specific" value="specific">
+								<label class="form-check-label" for="service_specific">Specific Services</label>
+							</div>
+							<select class="form-select form-select-solid" id="service_select" name="service_ids[]" multiple="multiple" data-placeholder="Select services" data-kt-select2="true" style="display: none;">
+								<!-- Options will be loaded via JavaScript -->
+							</select>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label">Staff</label>
+							<div class="form-check mb-3">
+								<input class="form-check-input" type="radio" name="staff_filter" id="staff_all" value="all">
+								<label class="form-check-label" for="staff_all">All Staff</label>
+							</div>
+							<div class="form-check mb-3">
+								<input class="form-check-input" type="radio" name="staff_filter" id="staff_specific" value="specific">
+								<label class="form-check-label" for="staff_specific">Specific Staff</label>
+							</div>
+							<select class="form-select form-select-solid" id="staff_select" name="staff_ids[]" multiple="multiple" data-placeholder="Select staff" data-kt-select2="true" style="display: none;">
+								<!-- Options will be loaded via JavaScript -->
+							</select>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label">Date Range</label>
+							<div class="form-check mb-3">
+								<input class="form-check-input" type="checkbox" id="date_range_unlimited">
+								<label class="form-check-label" for="date_range_unlimited">No date restriction</label>
+							</div>
+							<div id="date_range_inputs" style="display: none;">
+								<div class="mb-5">
+									<label class="form-label">Start Date</label>
+									<input type="date" class="form-control form-control-solid" name="start_date" />
+								</div>
+								<div>
+									<label class="form-label">End Date</label>
+									<input type="date" class="form-control form-control-solid" name="end_date" />
+								</div>
+							</div>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+					<!--begin::Col-->
+					<div class="col-lg-6">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-label">Usage Limit</label>
+							<div class="form-check mb-3">
+								<input class="form-check-input" type="checkbox" id="usage_unlimited">
+								<label class="form-check-label" for="usage_unlimited">Unlimited uses</label>
+							</div>
+							<div id="usage_limit_input" style="display: none;">
+								<label class="form-label">Maximum Uses</label>
+								<input type="number" class="form-control form-control-solid" name="max_uses" min="1" placeholder="Enter maximum number of uses" />
+							</div>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+
+				<!--begin::Row-->
+				<div class="row mb-10">
+					<!--begin::Col-->
+					<div class="col-lg-12">
+						<!--begin::Input group-->
+						<div class="mb-10">
+							<label class="form-check form-check-custom form-check-solid">
+								<input class="form-check-input" type="checkbox" name="is_active" value="1" />
+								<span class="form-check-label fw-semibold">Active</span>
+							</label>
+							<div class="form-text">Inactive links cannot be used for booking</div>
+						</div>
+						<!--end::Input group-->
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+
+				<!--begin::Actions-->
+				<div class="d-flex justify-content-end">
+					<a href="/booking-links" class="btn btn-light me-3">Cancel</a>
+					<button type="submit" class="btn btn-primary" id="kt_booking_link_edit_submit">
+						<span class="indicator-label">Update Booking Link</span>
+						<span class="indicator-progress">Please wait...
+							<span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+						</span>
+					</button>
+				</div>
+				<!--end::Actions-->
+			</form>
+			<!--end::Form-->
+		</div>
+		<!--end::Card body-->
+	</div>
+	<!--end::Card-->
+</div>
+<!--end::Content container-->
+{% endblock %}
+
+{% block scripts %}
+<script>
+	"use strict";
+
+	// Token kontrolü
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		window.location.href = '/login';
+	}
+
+	// Extract booking link ID from URL
+	let bookingLinkId = null;
+	const pathParts = window.location.pathname.split('/').filter(p => p);
+	const editIndex = pathParts.indexOf('edit');
+	if (editIndex > 0) {
+		bookingLinkId = parseInt(pathParts[editIndex - 1]);
+	}
+
+	if (!bookingLinkId || isNaN(bookingLinkId)) {
+		if (typeof Swal !== 'undefined') {
+			Swal.fire({
+				text: "Invalid booking link ID",
+				icon: "error",
+				buttonsStyling: false,
+				confirmButtonText: "Ok",
+				customClass: {
+					confirmButton: "btn btn-primary"
+				}
+			}).then(() => {
+				window.location.href = '/booking-links';
+			});
+		} else {
+			alert('Invalid booking link ID');
+			window.location.href = '/booking-links';
+		}
+	}
+
+	// API base URL
+	const API_BASE = '/api/booking-links';
+	const SERVICES_API = '/api/services';
+	const STAFF_API = '/api/staff';
+
+	// Load booking link data
+	async function loadBookingLink() {
+		try {
+			const response = await fetch(`${API_BASE}/${bookingLinkId}`, {
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				if (response.status === 404) {
+					if (typeof Swal !== 'undefined') {
+						Swal.fire({
+							text: "Booking link not found",
+							icon: "error",
+							buttonsStyling: false,
+							confirmButtonText: "Ok",
+							customClass: {
+								confirmButton: "btn btn-primary"
+							}
+						}).then(() => {
+							window.location.href = '/booking-links';
+						});
+					} else {
+						alert('Booking link not found');
+						window.location.href = '/booking-links';
+					}
+					return;
+				}
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const bookingLink = await response.json();
+			
+			// Populate form
+			document.querySelector('input[name="name"]').value = bookingLink.name || '';
+			document.querySelector('textarea[name="description"]').value = bookingLink.description || '';
+			document.querySelector('input[name="is_active"]').checked = bookingLink.is_active;
+
+			// Services
+			if (!bookingLink.service_ids || bookingLink.service_ids.length === 0) {
+				document.getElementById('service_all').checked = true;
+			} else {
+				document.getElementById('service_specific').checked = true;
+				// Services will be selected after Select2 is initialized
+			}
+
+			// Staff
+			if (!bookingLink.staff_ids || bookingLink.staff_ids.length === 0) {
+				document.getElementById('staff_all').checked = true;
+			} else {
+				document.getElementById('staff_specific').checked = true;
+				// Staff will be selected after Select2 is initialized
+			}
+
+			// Date range
+			if (!bookingLink.start_date && !bookingLink.end_date) {
+				document.getElementById('date_range_unlimited').checked = true;
+			} else {
+				document.getElementById('date_range_unlimited').checked = false;
+				document.getElementById('date_range_inputs').style.display = 'block';
+				if (bookingLink.start_date) {
+					const startDate = new Date(bookingLink.start_date);
+					document.querySelector('input[name="start_date"]').value = startDate.toISOString().split('T')[0];
+				}
+				if (bookingLink.end_date) {
+					const endDate = new Date(bookingLink.end_date);
+					document.querySelector('input[name="end_date"]').value = endDate.toISOString().split('T')[0];
+				}
+			}
+
+			// Usage limit
+			if (!bookingLink.max_uses) {
+				document.getElementById('usage_unlimited').checked = true;
+			} else {
+				document.getElementById('usage_unlimited').checked = false;
+				document.getElementById('usage_limit_input').style.display = 'block';
+				document.querySelector('input[name="max_uses"]').value = bookingLink.max_uses;
+			}
+
+			// Store booking link data for later use
+			window.bookingLinkData = bookingLink;
+
+		} catch (error) {
+			console.error('Error loading booking link:', error);
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Error loading booking link: " + error.message,
+					icon: "error",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				}).then(() => {
+					window.location.href = '/booking-links';
+				});
+			} else {
+				alert('Error loading booking link: ' + error.message);
+				window.location.href = '/booking-links';
+			}
+		}
+	}
+
+	// Load services and staff for selects
+	async function loadOptions() {
+		try {
+			// Load services
+			const servicesResponse = await fetch(SERVICES_API, {
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+			if (servicesResponse.ok) {
+				const services = await servicesResponse.json();
+				const serviceSelect = document.getElementById('service_select');
+				services.forEach(service => {
+					const option = document.createElement('option');
+					option.value = service.id;
+					option.textContent = service.name;
+					serviceSelect.appendChild(option);
+				});
+			}
+
+			// Load staff
+			const staffResponse = await fetch(STAFF_API, {
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+			if (staffResponse.ok) {
+				const staff = await staffResponse.json();
+				const staffSelect = document.getElementById('staff_select');
+				staff.forEach(s => {
+					const option = document.createElement('option');
+					option.value = s.id;
+					option.textContent = s.full_name;
+					staffSelect.appendChild(option);
+				});
+			}
+
+			// Initialize Select2
+			if (typeof $ !== 'undefined' && $.fn.select2) {
+				$('#service_select').select2({
+					placeholder: 'Select services',
+					allowClear: true,
+					width: '100%'
+				});
+				$('#staff_select').select2({
+					placeholder: 'Select staff',
+					allowClear: true,
+					width: '100%'
+				});
+
+				// After Select2 is initialized, populate selected values if booking link data is loaded
+				if (window.bookingLinkData) {
+					if (window.bookingLinkData.service_ids && window.bookingLinkData.service_ids.length > 0) {
+						$('#service_select').val(window.bookingLinkData.service_ids).trigger('change');
+						const $serviceSelect = $('#service_select');
+						const $serviceContainer = $serviceSelect.next('.select2-container');
+						if ($serviceContainer.length) {
+							$serviceContainer.show();
+						}
+					} else {
+						const $serviceSelect = $('#service_select');
+						const $serviceContainer = $serviceSelect.next('.select2-container');
+						if ($serviceContainer.length) {
+							$serviceContainer.hide();
+						}
+					}
+
+					if (window.bookingLinkData.staff_ids && window.bookingLinkData.staff_ids.length > 0) {
+						$('#staff_select').val(window.bookingLinkData.staff_ids).trigger('change');
+						const $staffSelect = $('#staff_select');
+						const $staffContainer = $staffSelect.next('.select2-container');
+						if ($staffContainer.length) {
+							$staffContainer.show();
+						}
+					} else {
+						const $staffSelect = $('#staff_select');
+						const $staffContainer = $staffSelect.next('.select2-container');
+						if ($staffContainer.length) {
+							$staffContainer.hide();
+						}
+					}
+				}
+			}
+		} catch (error) {
+			console.error('Error loading options:', error);
+		}
+	}
+
+	// Toggle service select visibility
+	document.querySelectorAll('input[name="service_filter"]').forEach(radio => {
+		radio.addEventListener('change', function() {
+			const serviceSelect = document.getElementById('service_select');
+			if (this.value === 'specific') {
+				serviceSelect.style.display = 'block';
+				if (typeof $ !== 'undefined' && $.fn.select2) {
+					$('#service_select').select2('destroy');
+					$('#service_select').select2({
+						placeholder: 'Select services',
+						allowClear: true,
+						width: '100%'
+					});
+					// Show Select2 container
+					const $select = $('#service_select');
+					const $container = $select.next('.select2-container');
+					if ($container.length) {
+						$container.show();
+					}
+					// Restore selected values if any
+					if (window.bookingLinkData && window.bookingLinkData.service_ids && window.bookingLinkData.service_ids.length > 0) {
+						$('#service_select').val(window.bookingLinkData.service_ids).trigger('change');
+					}
+				}
+			} else {
+				serviceSelect.style.display = 'none';
+				if (typeof $ !== 'undefined' && $.fn.select2) {
+					$('#service_select').val(null).trigger('change');
+					// Hide Select2 container
+					const $select = $('#service_select');
+					const $container = $select.next('.select2-container');
+					if ($container.length) {
+						$container.hide();
+					}
+				}
+			}
+		});
+	});
+
+	// Toggle staff select visibility
+	document.querySelectorAll('input[name="staff_filter"]').forEach(radio => {
+		radio.addEventListener('change', function() {
+			const staffSelect = document.getElementById('staff_select');
+			if (this.value === 'specific') {
+				staffSelect.style.display = 'block';
+				if (typeof $ !== 'undefined' && $.fn.select2) {
+					$('#staff_select').select2('destroy');
+					$('#staff_select').select2({
+						placeholder: 'Select staff',
+						allowClear: true,
+						width: '100%'
+					});
+					// Show Select2 container
+					const $select = $('#staff_select');
+					const $container = $select.next('.select2-container');
+					if ($container.length) {
+						$container.show();
+					}
+					// Restore selected values if any
+					if (window.bookingLinkData && window.bookingLinkData.staff_ids && window.bookingLinkData.staff_ids.length > 0) {
+						$('#staff_select').val(window.bookingLinkData.staff_ids).trigger('change');
+					}
+				}
+			} else {
+				staffSelect.style.display = 'none';
+				if (typeof $ !== 'undefined' && $.fn.select2) {
+					$('#staff_select').val(null).trigger('change');
+					// Hide Select2 container
+					const $select = $('#staff_select');
+					const $container = $select.next('.select2-container');
+					if ($container.length) {
+						$container.hide();
+					}
+				}
+			}
+		});
+	});
+
+	// Toggle date range inputs
+	document.getElementById('date_range_unlimited')?.addEventListener('change', function() {
+		const dateRangeInputs = document.getElementById('date_range_inputs');
+		if (this.checked) {
+			dateRangeInputs.style.display = 'none';
+			document.querySelector('input[name="start_date"]').value = '';
+			document.querySelector('input[name="end_date"]').value = '';
+		} else {
+			dateRangeInputs.style.display = 'block';
+		}
+	});
+
+	// Toggle usage limit input
+	document.getElementById('usage_unlimited')?.addEventListener('change', function() {
+		const usageLimitInput = document.getElementById('usage_limit_input');
+		if (this.checked) {
+			usageLimitInput.style.display = 'none';
+			document.querySelector('input[name="max_uses"]').value = '';
+		} else {
+			usageLimitInput.style.display = 'block';
+		}
+	});
+
+	// Form submit handler
+	document.getElementById('kt_booking_link_edit_form')?.addEventListener('submit', async function(e) {
+		e.preventDefault();
+		
+		const form = e.target;
+		const submitButton = document.getElementById('kt_booking_link_edit_submit');
+		const indicator = submitButton.querySelector('.indicator-label');
+		const progress = submitButton.querySelector('.indicator-progress');
+		
+		submitButton.disabled = true;
+		indicator.style.display = 'none';
+		progress.style.display = 'inline-block';
+
+		// Build form data
+		const formData = {
+			name: form.name.value.trim(),
+			description: form.description.value.trim() || null,
+			is_active: form.is_active.checked
+		};
+
+		// Services
+		const serviceFilter = document.querySelector('input[name="service_filter"]:checked').value;
+		if (serviceFilter === 'specific') {
+			const selectedServices = Array.from(document.getElementById('service_select').selectedOptions).map(opt => parseInt(opt.value));
+			if (selectedServices.length === 0) {
+				if (typeof Swal !== 'undefined') {
+					Swal.fire({
+						text: "Please select at least one service or choose 'All Services'",
+						icon: "warning",
+						buttonsStyling: false,
+						confirmButtonText: "Ok",
+						customClass: {
+							confirmButton: "btn btn-primary"
+						}
+					});
+				} else {
+					alert('Please select at least one service or choose "All Services"');
+				}
+				submitButton.disabled = false;
+				indicator.style.display = 'inline-block';
+				progress.style.display = 'none';
+				return;
+			}
+			formData.service_ids = selectedServices;
+		} else {
+			formData.service_ids = null;
+		}
+
+		// Staff
+		const staffFilter = document.querySelector('input[name="staff_filter"]:checked').value;
+		if (staffFilter === 'specific') {
+			const selectedStaff = Array.from(document.getElementById('staff_select').selectedOptions).map(opt => parseInt(opt.value));
+			if (selectedStaff.length === 0) {
+				if (typeof Swal !== 'undefined') {
+					Swal.fire({
+						text: "Please select at least one staff or choose 'All Staff'",
+						icon: "warning",
+						buttonsStyling: false,
+						confirmButtonText: "Ok",
+						customClass: {
+							confirmButton: "btn btn-primary"
+						}
+					});
+				} else {
+					alert('Please select at least one staff or choose "All Staff"');
+				}
+				submitButton.disabled = false;
+				indicator.style.display = 'inline-block';
+				progress.style.display = 'none';
+				return;
+			}
+			formData.staff_ids = selectedStaff;
+		} else {
+			formData.staff_ids = null;
+		}
+
+		// Date range
+		if (document.getElementById('date_range_unlimited').checked) {
+			formData.start_date = null;
+			formData.end_date = null;
+		} else {
+			formData.start_date = form.start_date.value || null;
+			formData.end_date = form.end_date.value || null;
+		}
+
+		// Usage limit
+		if (document.getElementById('usage_unlimited').checked) {
+			formData.max_uses = null;
+		} else {
+			const maxUses = parseInt(form.max_uses.value);
+			if (isNaN(maxUses) || maxUses < 1) {
+				if (typeof Swal !== 'undefined') {
+					Swal.fire({
+						text: "Please enter a valid maximum uses number",
+						icon: "warning",
+						buttonsStyling: false,
+						confirmButtonText: "Ok",
+						customClass: {
+							confirmButton: "btn btn-primary"
+						}
+					});
+				} else {
+					alert('Please enter a valid maximum uses number');
+				}
+				submitButton.disabled = false;
+				indicator.style.display = 'inline-block';
+				progress.style.display = 'none';
+				return;
+			}
+			formData.max_uses = maxUses;
+		}
+
+		// Validation
+		if (!formData.name) {
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Link name is required",
+					icon: "warning",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				});
+			} else {
+				alert('Link name is required');
+			}
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+			return;
+		}
+
+		try {
+			const response = await fetch(`${API_BASE}/${bookingLinkId}`, {
+				method: 'PUT',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(formData)
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				const errorData = await response.json();
+				throw new Error(errorData.detail || 'Failed to update booking link');
+			}
+
+			// Show success
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Booking link updated successfully!",
+					icon: "success",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				}).then(() => {
+					window.location.href = '/booking-links';
+				});
+			} else {
+				alert('Booking link updated successfully!');
+				window.location.href = '/booking-links';
+			}
+
+		} catch (error) {
+			console.error('Error updating booking link:', error);
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({
+					text: "Error: " + error.message,
+					icon: "error",
+					buttonsStyling: false,
+					confirmButtonText: "Ok",
+					customClass: {
+						confirmButton: "btn btn-primary"
+					}
+				});
+			} else {
+				alert('Error: ' + error.message);
+			}
+		} finally {
+			submitButton.disabled = false;
+			indicator.style.display = 'inline-block';
+			progress.style.display = 'none';
+		}
+	});
+
+	// Load on page load
+	document.addEventListener('DOMContentLoaded', async function() {
+		await loadBookingLink();
+		await loadOptions();
+	});
+</script>
+{% endblock %}
+

@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!--begin::Content container-->
+<div id="kt_app_content_container" class="app-container container-xxl">
+	<!--begin::Customer Overview-->
+	<div class="card mb-5 mb-xl-10">
+		<!--begin::Card header-->
+		<div class="card-header border-0 cursor-pointer">
+			<!--begin::Card title-->
+			<div class="card-title m-0">
+				<h3 class="fw-bold m-0">Customer Details</h3>
+			</div>
+			<!--end::Card title-->
+			<!--begin::Action-->
+			<div class="d-flex gap-2">
+				<a href="#" class="btn btn-sm btn-light align-self-center" id="edit_customer_btn">Edit</a>
+				<a href="/customers" class="btn btn-sm btn-primary align-self-center">Back to List</a>
+			</div>
+			<!--end::Action-->
+		</div>
+		<!--end::Card header-->
+		<!--begin::Card body-->
+		<div class="card-body p-9">
+			<!--begin::Loading-->
+			<div id="customer_loading" class="text-center py-10">
+				<div class="spinner-border text-primary" role="status">
+					<span class="visually-hidden">Loading...</span>
+				</div>
+			</div>
+			<!--end::Loading-->
+			<!--begin::Customer Info-->
+			<div id="customer_info" style="display: none;">
+				<!--begin::Row-->
+				<div class="row mb-7">
+					<!--begin::Label-->
+					<label class="col-lg-4 fw-semibold text-muted">Full Name</label>
+					<!--end::Label-->
+					<!--begin::Col-->
+					<div class="col-lg-8">
+						<span class="fw-bold fs-6 text-gray-800" id="customer_full_name">-</span>
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-7">
+					<!--begin::Label-->
+					<label class="col-lg-4 fw-semibold text-muted">Email</label>
+					<!--end::Label-->
+					<!--begin::Col-->
+					<div class="col-lg-8">
+						<a href="#" class="fw-bold fs-6 text-gray-800 text-hover-primary" id="customer_email">-</a>
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-7">
+					<!--begin::Label-->
+					<label class="col-lg-4 fw-semibold text-muted">Phone</label>
+					<!--end::Label-->
+					<!--begin::Col-->
+					<div class="col-lg-8">
+						<span class="fw-bold fs-6 text-gray-800" id="customer_phone">-</span>
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-7">
+					<!--begin::Label-->
+					<label class="col-lg-4 fw-semibold text-muted">Total Spent</label>
+					<!--end::Label-->
+					<!--begin::Col-->
+					<div class="col-lg-8">
+						<span class="fw-bold fs-3 text-primary" id="customer_total_spent">$0.00</span>
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+				<!--begin::Row-->
+				<div class="row mb-7">
+					<!--begin::Label-->
+					<label class="col-lg-4 fw-semibold text-muted">Member Since</label>
+					<!--end::Label-->
+					<!--begin::Col-->
+					<div class="col-lg-8">
+						<span class="fw-bold fs-6 text-gray-800" id="customer_created_at">-</span>
+					</div>
+					<!--end::Col-->
+				</div>
+				<!--end::Row-->
+			</div>
+			<!--end::Customer Info-->
+		</div>
+		<!--end::Card body-->
+	</div>
+	<!--end::Customer Overview-->
+
+	<!--begin::Last Appointment-->
+	<div class="card mb-5 mb-xl-10" id="last_appointment_card" style="display: none;">
+		<!--begin::Card header-->
+		<div class="card-header border-0">
+			<!--begin::Card title-->
+			<div class="card-title">
+				<h3 class="fw-bold m-0">Last Appointment</h3>
+			</div>
+			<!--end::Card title-->
+		</div>
+		<!--end::Card header-->
+		<!--begin::Card body-->
+		<div class="card-body p-9" id="last_appointment_body">
+			<!-- Content will be loaded via JavaScript -->
+		</div>
+		<!--end::Card body-->
+	</div>
+	<!--end::Last Appointment-->
+
+	<!--begin::Appointments History-->
+	<div class="card mb-5 mb-xl-10">
+		<!--begin::Card header-->
+		<div class="card-header border-0 pt-6">
+			<!--begin::Card title-->
+			<div class="card-title">
+				<h3 class="fw-bold m-0">Appointment History</h3>
+			</div>
+			<!--end::Card title-->
+		</div>
+		<!--end::Card header-->
+		<!--begin::Card body-->
+		<div class="card-body pt-0">
+			<!--begin::Table-->
+			<div class="table-responsive">
+				<table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_appointments_history_table">
+					<thead>
+						<tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
+							<th class="min-w-80px">ID</th>
+							<th class="min-w-150px">Date & Time</th>
+							<th class="min-w-150px">Services</th>
+							<th class="min-w-100px">Status</th>
+							<th class="min-w-100px">Total Price</th>
+							<th class="min-w-100px">Notes</th>
+						</tr>
+					</thead>
+					<tbody class="fw-semibold text-gray-600" id="kt_appointments_history_table_body">
+						<!-- Loading row -->
+						<tr id="appointments_loading">
+							<td colspan="6" class="text-center py-10">
+								<div class="spinner-border text-primary" role="status">
+									<span class="visually-hidden">Loading...</span>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<!--end::Table-->
+			<!--begin::Empty State-->
+			<div id="appointments_empty" class="text-center py-10" style="display: none;">
+				<div class="text-gray-500 fs-4">No appointments found</div>
+			</div>
+			<!--end::Empty State-->
+		</div>
+		<!--end::Card body-->
+	</div>
+	<!--end::Appointments History-->
+</div>
+<!--end::Content container-->
+{% endblock %}
+
+{% block scripts %}
+<script>
+	"use strict";
+
+	// Token kontrolü
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		window.location.href = '/login';
+	}
+
+	// Get customer ID from URL
+	const pathParts = window.location.pathname.split('/');
+	const customerId = pathParts[pathParts.length - 1];
+
+	if (!customerId || isNaN(customerId)) {
+		alert('Invalid customer ID');
+		window.location.href = '/customers';
+	}
+
+	// API endpoint
+	const CUSTOMER_HISTORY_API = `/api/customers/${customerId}/history`;
+
+	// Helper function to escape HTML
+	function escapeHtml(text) {
+		if (!text) return '';
+		const div = document.createElement('div');
+		div.textContent = text;
+		return div.innerHTML;
+	}
+
+	// Format date
+	function formatDate(dateString) {
+		if (!dateString) return '-';
+		const date = new Date(dateString);
+		return date.toLocaleDateString('en-US', {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit'
+		});
+	}
+
+	// Format date only
+	function formatDateOnly(dateString) {
+		if (!dateString) return '-';
+		const date = new Date(dateString);
+		return date.toLocaleDateString('en-US', {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric'
+		});
+	}
+
+	// Format time only
+	function formatTimeOnly(dateString) {
+		if (!dateString) return '-';
+		const date = new Date(dateString);
+		return date.toLocaleTimeString('en-US', {
+			hour: '2-digit',
+			minute: '2-digit',
+			hour12: false
+		});
+	}
+
+	// Format currency
+	function formatCurrency(amount) {
+		if (!amount) return '$0.00';
+		const num = parseFloat(amount);
+		return '$' + num.toFixed(2);
+	}
+
+	// Get status badge class
+	function getStatusBadgeClass(status) {
+		switch(status) {
+			case 'scheduled':
+				return 'badge-light-primary';
+			case 'completed':
+				return 'badge-light-success';
+			case 'cancelled':
+				return 'badge-light-danger';
+			case 'no_show':
+				return 'badge-light-info';
+			default:
+				return 'badge-light-secondary';
+		}
+	}
+
+	// Load customer history
+	async function loadCustomerHistory() {
+		try {
+			const response = await fetch(CUSTOMER_HISTORY_API, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				if (response.status === 401) {
+					localStorage.removeItem('access_token');
+					window.location.href = '/login';
+					return;
+				}
+				if (response.status === 404) {
+					alert('Customer not found');
+					window.location.href = '/customers';
+					return;
+				}
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const data = await response.json();
+			
+			// Hide loading
+			document.getElementById('customer_loading').style.display = 'none';
+			document.getElementById('appointments_loading').style.display = 'none';
+
+			// Populate customer info
+			const customer = data.customer;
+			document.getElementById('customer_full_name').textContent = escapeHtml(customer.full_name);
+			document.getElementById('customer_email').textContent = escapeHtml(customer.email);
+			document.getElementById('customer_email').href = `mailto:${escapeHtml(customer.email)}`;
+			document.getElementById('customer_phone').textContent = escapeHtml(customer.phone || '-');
+			document.getElementById('customer_total_spent').textContent = formatCurrency(data.total_spent);
+			document.getElementById('customer_created_at').textContent = formatDateOnly(customer.created_at);
+			document.getElementById('customer_info').style.display = 'block';
+			
+			// Edit button
+			document.getElementById('edit_customer_btn').href = `/customers/${customerId}/edit`;
+
+			// Populate last appointment
+			if (data.last_appointment) {
+				const lastAppt = data.last_appointment;
+				const lastApptBody = document.getElementById('last_appointment_body');
+				lastApptBody.innerHTML = `
+					<div class="row mb-7">
+						<label class="col-lg-4 fw-semibold text-muted">Date & Time</label>
+						<div class="col-lg-8">
+							<span class="fw-bold fs-6 text-gray-800">${formatDate(lastAppt.appointment_date)}</span>
+						</div>
+					</div>
+					<div class="row mb-7">
+						<label class="col-lg-4 fw-semibold text-muted">Status</label>
+						<div class="col-lg-8">
+							<span class="badge ${getStatusBadgeClass(lastAppt.status)} fs-7 fw-bold">${escapeHtml(lastAppt.status)}</span>
+						</div>
+					</div>
+					<div class="row mb-7">
+						<label class="col-lg-4 fw-semibold text-muted">Services</label>
+						<div class="col-lg-8">
+							${lastAppt.services && lastAppt.services.length > 0 
+								? lastAppt.services.map(s => `<span class="badge badge-light-info me-2">${escapeHtml(s.name)} (${s.duration_minutes} min - ${formatCurrency(s.price)})</span>`).join('')
+								: '<span class="text-gray-500">No services</span>'
+							}
+						</div>
+					</div>
+					${lastAppt.notes ? `
+					<div class="row mb-7">
+						<label class="col-lg-4 fw-semibold text-muted">Notes</label>
+						<div class="col-lg-8">
+							<span class="fw-bold fs-6 text-gray-800">${escapeHtml(lastAppt.notes)}</span>
+						</div>
+					</div>
+					` : ''}
+				`;
+				document.getElementById('last_appointment_card').style.display = 'block';
+			}
+
+			// Populate appointments history
+			const appointments = data.appointments || [];
+			const tbody = document.getElementById('kt_appointments_history_table_body');
+			
+			if (appointments.length === 0) {
+				document.getElementById('appointments_empty').style.display = 'block';
+				return;
+			}
+
+			tbody.innerHTML = '';
+			appointments.forEach(appointment => {
+				// Calculate total price from services
+				const totalPrice = appointment.services && appointment.services.length > 0
+					? appointment.services.reduce((sum, s) => sum + parseFloat(s.price || 0), 0)
+					: 0;
+
+				const row = document.createElement('tr');
+				row.innerHTML = `
+					<td>
+						<a href="/appointments/${appointment.id}" class="text-gray-800 fw-bold text-hover-primary">#${escapeHtml(appointment.id)}</a>
+					</td>
+					<td>
+						<div class="d-flex flex-column">
+							<span class="text-gray-800 mb-1">${formatDateOnly(appointment.appointment_date)}</span>
+							<span class="text-gray-500 fs-7">${formatTimeOnly(appointment.appointment_date)}</span>
+						</div>
+					</td>
+					<td>
+						${appointment.services && appointment.services.length > 0
+							? appointment.services.map(s => `<div class="mb-1"><span class="badge badge-light-info">${escapeHtml(s.name)}</span> <span class="text-gray-500 fs-7">(${s.duration_minutes} min)</span></div>`).join('')
+							: '<span class="text-gray-500">No services</span>'
+						}
+					</td>
+					<td>
+						<span class="badge ${getStatusBadgeClass(appointment.status)} fs-7 fw-bold">${escapeHtml(appointment.status)}</span>
+					</td>
+					<td>
+						<span class="fw-bold text-gray-800">${formatCurrency(totalPrice)}</span>
+					</td>
+					<td>
+						<span class="text-gray-600">${escapeHtml(appointment.notes || '-')}</span>
+					</td>
+				`;
+				tbody.appendChild(row);
+			});
+
+		} catch (error) {
+			console.error('Error loading customer history:', error);
+			document.getElementById('customer_loading').style.display = 'none';
+			document.getElementById('appointments_loading').style.display = 'none';
+			alert('Error loading customer history. Please refresh the page.');
+		}
+	}
+
+	// Load data on page load
+	document.addEventListener('DOMContentLoaded', function() {
+		loadCustomerHistory();
+	});
+</script>
+{% endblock %}
+

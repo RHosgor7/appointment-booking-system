@@ -1,0 +1,1318 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!--begin::Toolbar-->
+<div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+    <!--begin::Toolbar container-->
+    <div id="kt_app_toolbar_container" class="container-fluid d-flex flex-stack">
+        <!--begin::Page title-->
+        <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+													<!--begin::Title-->
+            <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">Dashboard</h1>
+													<!--end::Title-->
+            <!--begin::Breadcrumb-->
+            <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                <!--begin::Item-->
+                <li class="breadcrumb-item text-muted">
+                    <a href="/" class="text-muted text-hover-primary">Home</a>
+                </li>
+                <!--end::Item-->
+                <!--begin::Item-->
+                <li class="breadcrumb-item">
+                    <span class="bullet bg-gray-500 w-5px h-2px"></span>
+                </li>
+                <!--end::Item-->
+                <!--begin::Item-->
+                <li class="breadcrumb-item text-muted">Dashboard</li>
+                <!--end::Item-->
+            </ul>
+            <!--end::Breadcrumb-->
+												</div>
+        <!--end::Page title-->
+														</div>
+    <!--end::Toolbar container-->
+														</div>
+<!--end::Toolbar-->
+
+<!--begin::Row-->
+<div class="row gx-5 gx-xl-10">
+										<!--begin::Col-->
+    <div class="col-xl-4 mb-10">
+        <!--begin::Card: Today Summary-->
+        <div class="card card-flush h-xl-100">
+            <!--begin::Heading-->
+            <div
+                    class="card-header rounded bgi-no-repeat bgi-size-cover bgi-position-y-top bgi-position-x-center align-items-start h-250px"
+                    style="background-image:url('/static/assets/svg/shapes/top-green.png')"
+                    data-bs-theme="light"
+            >
+													<!--begin::Title-->
+                <h3 class="card-title align-items-start flex-column text-white pt-15">
+                    <span class="fw-bold fs-2x mb-3">Today</span>
+
+                    <!-- Dynamic content will be loaded here -->
+                    <div class="fs-4 text-white" id="today-header-text">
+                        <span class="opacity-75">Loading...</span>
+														</div>
+                </h3>
+													<!--end::Title-->
+
+												</div>
+            <!--end::Heading-->
+
+            <!--begin::Body-->
+            <div class="card-body mt-n20">
+															<!--begin::Stats-->
+                <div class="mt-n20 position-relative">
+                    <div class="row g-3 g-lg-6">
+                        <!-- Total appointments -->
+                        <div class="col-6">
+                            <div class="bg-gray-100 bg-opacity-70 rounded-2 px-6 py-5">
+                                <div class="symbol symbol-30px me-5 mb-8">
+                                    <span class="symbol-label">
+                                        <i class="ki-duotone ki-calendar fs-1 text-primary">
+                                            <span class="path1"></span><span class="path2"></span>
+                                        </i>
+                                    </span>
+														</div>
+                                <div class="m-0">
+                                    <span class="text-gray-700 fw-bolder d-block fs-2qx lh-1 ls-n1 mb-1" id="today-total">0</span>
+                                    <span class="text-gray-500 fw-semibold fs-6">Appointments</span>
+														</div>
+														</div>
+													</div>
+
+                        <!-- Completed -->
+                        <div class="col-6">
+                            <div class="bg-gray-100 bg-opacity-70 rounded-2 px-6 py-5">
+                                <div class="symbol symbol-30px me-5 mb-8">
+                                    <span class="symbol-label">
+                                        <i class="ki-duotone ki-check-circle fs-1 text-success">
+                                            <span class="path1"></span><span class="path2"></span>
+                                        </i>
+                                    </span>
+															</div>
+                                <div class="m-0">
+                                    <span class="text-gray-700 fw-bolder d-block fs-2qx lh-1 ls-n1 mb-1" id="today-completed">0</span>
+                                    <span class="text-gray-500 fw-semibold fs-6">Completed</span>
+															</div>
+															</div>
+																	</div>
+
+                        <!-- Cancelled -->
+                        <div class="col-6">
+                            <div class="bg-gray-100 bg-opacity-70 rounded-2 px-6 py-5">
+                                <div class="symbol symbol-30px me-5 mb-8">
+                                    <span class="symbol-label">
+                                        <i class="ki-duotone ki-cross-circle fs-1 text-danger">
+                                            <span class="path1"></span><span class="path2"></span>
+                                        </i>
+                                    </span>
+																	</div>
+                                <div class="m-0">
+                                    <span class="text-gray-700 fw-bolder d-block fs-2qx lh-1 ls-n1 mb-1" id="today-cancelled">0</span>
+                                    <span class="text-gray-500 fw-semibold fs-6">Cancelled</span>
+																	</div>
+																</div>
+															</div>
+
+                        <!-- Revenue -->
+                        <div class="col-6">
+                            <div class="bg-gray-100 bg-opacity-70 rounded-2 px-6 py-5">
+                                <div class="symbol symbol-30px me-5 mb-8">
+                                    <span class="symbol-label">
+                                        <i class="ki-duotone ki-wallet fs-1 text-primary">
+                                            <span class="path1"></span><span class="path2"></span><span class="path3"></span>
+                                        </i>
+                                    </span>
+													</div>
+                                <div class="m-0">
+                                    <span class="text-gray-700 fw-bolder d-block fs-2qx lh-1 ls-n1 mb-1" id="today-revenue">0₺</span>
+                                    <span class="text-gray-500 fw-semibold fs-6">Revenue</span>
+													</div>
+													</div>
+												</div>
+											</div>
+										</div>
+                <!--end::Stats-->
+												</div>
+												<!--end::Body-->
+											</div>
+        <!--end::Card: Today Summary-->
+										</div>
+										<!--end::Col-->
+
+    <!--begin::Col-->
+    <div class="col-xl-8 mb-10">
+									<!--begin::Row-->
+        <div class="row g-5 g-xl-10">
+										<!--begin::Col-->
+            <div class="col-xl-6 mb-xl-10">
+                <!--begin::Slider Widget: Performance-->
+                <div id="kt_sliders_widget_performance" class="card card-flush carousel carousel-custom carousel-stretch slide h-xl-100" data-bs-ride="carousel" data-bs-interval="6000">
+												<div class="card-header pt-5">
+                        <h4 class="card-title d-flex align-items-start flex-column">
+                            <span class="card-label fw-bold text-gray-800">Performance</span>
+                            <span class="text-gray-500 mt-1 fw-bold fs-7">Appointment & Revenue trend</span>
+                        </h4>
+
+													<div class="card-toolbar">
+                            <ol class="p-0 m-0 carousel-indicators carousel-indicators-bullet carousel-indicators-active-primary">
+                                <li data-bs-target="#kt_sliders_widget_performance" data-bs-slide-to="0" class="active ms-1"></li>
+                                <li data-bs-target="#kt_sliders_widget_performance" data-bs-slide-to="1" class="ms-1"></li>
+                                <li data-bs-target="#kt_sliders_widget_performance" data-bs-slide-to="2" class="ms-1"></li>
+                            </ol>
+													</div>
+												</div>
+
+                    <div class="card-body py-6">
+                        <div class="carousel-inner mt-n5">
+                            <!-- Slide 1: Last 7 days -->
+                            <div class="carousel-item active show">
+                                <div class="d-flex align-items-center mb-5">
+                                    <div class="w-80px flex-shrink-0 me-2">
+                                        <div class="min-h-auto ms-n3" id="kt_performance_chart_7d" style="height: 100px"></div>
+																</div>
+                                    <div class="m-0">
+                                        <h4 class="fw-bold text-gray-800 mb-3">Last 7 Days</h4>
+                                        <div class="d-flex d-grid gap-5">
+                                            <div class="d-flex flex-column flex-shrink-0 me-4">
+                                                <span class="d-flex align-items-center fs-7 fw-bold text-gray-500 mb-2">
+                                                    <i class="ki-duotone ki-right-square fs-6 text-gray-600 me-2">
+                                                        <span class="path1"></span><span class="path2"></span>
+                                                    </i><span id="w7-completed">0</span> completed
+                                                </span>
+                                                <span class="d-flex align-items-center text-gray-500 fw-bold fs-7">
+                                                    <i class="ki-duotone ki-right-square fs-6 text-gray-600 me-2">
+                                                        <span class="path1"></span><span class="path2"></span>
+                                                    </i><span id="w7-cancelled">0</span> cancelled
+                                                </span>
+															</div>
+                                            <div class="d-flex flex-column flex-shrink-0">
+                                                <span class="d-flex align-items-center fs-7 fw-bold text-gray-500 mb-2">
+                                                    <i class="ki-duotone ki-right-square fs-6 text-gray-600 me-2">
+                                                        <span class="path1"></span><span class="path2"></span>
+                                                    </i><span id="w7-total">0</span> appointments
+                                                </span>
+                                                <span class="d-flex align-items-center text-gray-500 fw-bold fs-7">
+                                                    <i class="ki-duotone ki-right-square fs-6 text-gray-600 me-2">
+                                                        <span class="path1"></span><span class="path2"></span>
+                                                    </i><span id="w7-revenue">0</span>₺ revenue
+                                                </span>
+																	</div>
+																	</div>
+																</div>
+																	</div>
+                                <div class="m-0">
+                                    <a href="/appointments?range=7d" class="btn btn-sm btn-light me-2 mb-2">Details</a>
+                                    <a href="/appointments/calendar" class="btn btn-sm btn-primary mb-2">Calendar</a>
+																	</div>
+																</div>
+
+                            <!-- Slide 2: This month -->
+                            <div class="carousel-item">
+                                <div class="d-flex align-items-center mb-5">
+                                    <div class="w-80px flex-shrink-0 me-2">
+                                        <div class="min-h-auto ms-n3" id="kt_performance_chart_mtd" style="height: 100px"></div>
+																	</div>
+                                    <div class="m-0">
+                                        <h4 class="fw-bold text-gray-800 mb-3">This Month (MTD)</h4>
+                                        <div class="d-flex d-grid gap-5">
+                                            <div class="d-flex flex-column flex-shrink-0 me-4">
+                                                <span class="d-flex align-items-center fs-7 fw-bold text-gray-500 mb-2">
+                                                    <i class="ki-duotone ki-right-square fs-6 text-gray-600 me-2">
+                                                        <span class="path1"></span><span class="path2"></span>
+                                                    </i><span id="mtd-completed">0</span> completed
+                                                </span>
+                                                <span class="d-flex align-items-center text-gray-500 fw-bold fs-7">
+                                                    <i class="ki-duotone ki-right-square fs-6 text-gray-600 me-2">
+                                                        <span class="path1"></span><span class="path2"></span>
+                                                    </i><span id="mtd-cancelled">0</span> cancelled
+                                                </span>
+																	</div>
+                                            <div class="d-flex flex-column flex-shrink-0">
+                                                <span class="d-flex align-items-center fs-7 fw-bold text-gray-500 mb-2">
+                                                    <i class="ki-duotone ki-right-square fs-6 text-gray-600 me-2">
+                                                        <span class="path1"></span><span class="path2"></span>
+                                                    </i><span id="mtd-total">0</span> appointments
+                                                </span>
+                                                <span class="d-flex align-items-center text-gray-500 fw-bold fs-7">
+                                                    <i class="ki-duotone ki-right-square fs-6 text-gray-600 me-2">
+                                                        <span class="path1"></span><span class="path2"></span>
+                                                    </i><span id="mtd-revenue">0</span>₺ revenue
+                                                </span>
+																</div>
+															</div>
+														</div>
+																</div>
+                                <div class="m-0">
+                                    <a href="/appointments?range=mtd" class="btn btn-sm btn-light me-2 mb-2">Details</a>
+                                    <a href="/services/top-selling" class="btn btn-sm btn-primary mb-2">Top Services</a>
+															</div>
+																	</div>
+
+                            <!-- Slide 3: Last 30 days -->
+                            <div class="carousel-item">
+                                <div class="d-flex align-items-center mb-5">
+                                    <div class="w-80px flex-shrink-0 me-2">
+                                        <div class="min-h-auto ms-n3" id="kt_performance_chart_30d" style="height: 100px"></div>
+																	</div>
+                                    <div class="m-0">
+                                        <h4 class="fw-bold text-gray-800 mb-3">Last 30 Days</h4>
+                                        <div class="d-flex d-grid gap-5">
+                                            <div class="d-flex flex-column flex-shrink-0 me-4">
+                                                <span class="d-flex align-items-center fs-7 fw-bold text-gray-500 mb-2">
+                                                    <i class="ki-duotone ki-right-square fs-6 text-gray-600 me-2">
+                                                        <span class="path1"></span><span class="path2"></span>
+                                                    </i><span id="d30-completed">0</span> completed
+                                                </span>
+                                                <span class="d-flex align-items-center text-gray-500 fw-bold fs-7">
+                                                    <i class="ki-duotone ki-right-square fs-6 text-gray-600 me-2">
+                                                        <span class="path1"></span><span class="path2"></span>
+                                                    </i><span id="d30-cancelled">0</span> cancelled
+                                                </span>
+																</div>
+                                            <div class="d-flex flex-column flex-shrink-0">
+                                                <span class="d-flex align-items-center fs-7 fw-bold text-gray-500 mb-2">
+                                                    <i class="ki-duotone ki-right-square fs-6 text-gray-600 me-2">
+                                                        <span class="path1"></span><span class="path2"></span>
+                                                    </i><span id="d30-total">0</span> appointments
+                                                </span>
+                                                <span class="d-flex align-items-center text-gray-500 fw-bold fs-7">
+                                                    <i class="ki-duotone ki-right-square fs-6 text-gray-600 me-2">
+                                                        <span class="path1"></span><span class="path2"></span>
+                                                    </i><span id="d30-revenue">0</span>₺ revenue
+                                                </span>
+																	</div>
+																	</div>
+																</div>
+																	</div>
+                                <div class="m-0">
+                                    <a href="/appointments?range=30d" class="btn btn-sm btn-light me-2 mb-2">Details</a>
+                                    <a href="/appointments/calendar" class="btn btn-sm btn-primary mb-2">Calendar</a>
+																	</div>
+																</div>
+															</div>
+														</div>
+													</div>
+                <!--end::Slider Widget: Performance-->
+										</div>
+										<!--end::Col-->
+
+										<!--begin::Col-->
+										<div class="col-xl-6 mb-5 mb-xl-10">
+                <!--begin::Slider Widget: Upcoming-->
+                <div id="kt_sliders_widget_upcoming" class="card card-flush carousel carousel-custom carousel-stretch slide h-xl-100" data-bs-ride="carousel" data-bs-interval="6500">
+												<div class="card-header pt-5">
+                        <h4 class="card-title d-flex align-items-start flex-column">
+                            <span class="card-label fw-bold text-gray-800">Upcoming Appointments</span>
+                            <span class="text-gray-500 mt-1 fw-bold fs-7">Today's upcoming appointments</span>
+                        </h4>
+
+													<div class="card-toolbar">
+                            <ol class="p-0 m-0 carousel-indicators carousel-indicators-bullet carousel-indicators-active-success">
+                                <li data-bs-target="#kt_sliders_widget_upcoming" data-bs-slide-to="0" class="active ms-1"></li>
+                                <li data-bs-target="#kt_sliders_widget_upcoming" data-bs-slide-to="1" class="ms-1"></li>
+                                <li data-bs-target="#kt_sliders_widget_upcoming" data-bs-slide-to="2" class="ms-1"></li>
+                            </ol>
+															</div>
+															</div>
+
+                    <div class="card-body py-6">
+                        <div class="carousel-inner">
+                            <!-- Slide 1 -->
+                            <div class="carousel-item active show">
+                                <div class="d-flex align-items-center mb-9">
+                                    <div class="symbol symbol-70px symbol-circle me-5">
+                                        <span class="symbol-label bg-light-success">
+                                            <i class="ki-duotone ki-user fs-3x text-success">
+                                                <span class="path1"></span><span class="path2"></span>
+                                            </i>
+                                        </span>
+															</div>
+
+                                    <div class="m-0">
+                                        <h4 class="fw-bold text-gray-800 mb-1" id="upcoming-1-customer">-</h4>
+                                        <div class="text-gray-500 fw-semibold mb-2" id="upcoming-1-time">-</div>
+
+                                        <div class="d-flex flex-wrap gap-2" id="upcoming-1-services">
+                                            <!-- Services will be loaded here -->
+																	</div>
+																	</div>
+																	</div>
+
+                                <div class="m-0">
+                                    <a href="#" id="upcoming-1-detail" class="btn btn-sm btn-light me-2 mb-2">Details</a>
+                                    <a href="#" id="upcoming-1-edit" class="btn btn-sm btn-success mb-2">Edit</a>
+																</div>
+															</div>
+
+                            <!-- Slide 2 -->
+                            <div class="carousel-item">
+                                <div class="d-flex align-items-center mb-9">
+                                    <div class="symbol symbol-70px symbol-circle me-5">
+                                        <span class="symbol-label bg-light-primary">
+                                            <i class="ki-duotone ki-user fs-3x text-primary">
+                                                <span class="path1"></span><span class="path2"></span>
+                                            </i>
+                                        </span>
+																</div>
+
+                                    <div class="m-0">
+                                        <h4 class="fw-bold text-gray-800 mb-1" id="upcoming-2-customer">-</h4>
+                                        <div class="text-gray-500 fw-semibold mb-2" id="upcoming-2-time">-</div>
+
+                                        <div class="d-flex flex-wrap gap-2" id="upcoming-2-services">
+                                            <!-- Services will be loaded here -->
+																</div>
+																</div>
+																</div>
+
+																			<div class="m-0">
+                                    <a href="#" id="upcoming-2-detail" class="btn btn-sm btn-light me-2 mb-2">Details</a>
+                                    <a href="#" id="upcoming-2-edit" class="btn btn-sm btn-success mb-2">Edit</a>
+																			</div>
+																		</div>
+
+                            <!-- Slide 3 -->
+                            <div class="carousel-item">
+                                <div class="d-flex align-items-center mb-9">
+                                    <div class="symbol symbol-70px symbol-circle me-5">
+                                        <span class="symbol-label bg-light-warning">
+                                            <i class="ki-duotone ki-user fs-3x text-warning">
+                                                <span class="path1"></span><span class="path2"></span>
+																					</i>
+																				</span>
+																			</div>
+
+																			<div class="m-0">
+                                        <h4 class="fw-bold text-gray-800 mb-1" id="upcoming-3-customer">-</h4>
+                                        <div class="text-gray-500 fw-semibold mb-2" id="upcoming-3-time">-</div>
+
+                                        <div class="d-flex flex-wrap gap-2" id="upcoming-3-services">
+                                            <!-- Services will be loaded here -->
+																			</div>
+																		</div>
+																	</div>
+
+                                <div class="m-0">
+                                    <a href="#" id="upcoming-3-detail" class="btn btn-sm btn-light me-2 mb-2">Details</a>
+                                    <a href="#" id="upcoming-3-edit" class="btn btn-sm btn-success mb-2">Edit</a>
+																</div>
+																		</div>
+																		</div>
+																	</div>
+																</div>
+                <!--end::Slider Widget: Upcoming-->
+														</div>
+														<!--end::Col-->
+													</div>
+													<!--end::Row-->
+
+        <!--begin::Engage widget: Empty slots-->
+        <div class="card border-transparent" data-bs-theme="light" style="background-color: #1C325E;">
+            <div class="card-body d-flex ps-xl-15 position-relative overflow-hidden">
+                <div class="m-0">
+                    <div class="position-relative fs-2x z-index-2 fw-bold text-white mb-7">
+                        Today there are <span class="text-warning">{{today_empty_slots}}</span> empty slots.
+                        <br />Would you like to open the calendar and fill them?
+												</div>
+
+                    <div class="mb-3">
+                        <a href="/appointments/calendar?date=today" class="btn btn-warning fw-semibold me-2">Go to Calendar</a>
+                        <a href="/appointments/create" class="btn btn-color-white bg-white bg-opacity-15 bg-hover-opacity-25 fw-semibold">New Appointment</a>
+											</div>
+										</div>
+
+                <img
+                        src="/static/assets/illustrations/sigma-1/17-dark.png"
+                        class="position-absolute bottom-0 end-0 h-200px opacity-75"
+                        alt="Illustration"
+                />
+														</div>
+													</div>
+        <!--end::Engage widget-->
+										</div>
+										<!--end::Col-->
+									</div>
+									<!--end::Row-->
+
+									<!--begin::Row-->
+<div class="row g-5 g-xl-10">
+										<!--begin::Col-->
+    <div class="col-xl-4 mb-10">
+        <!--begin::List widget: Service Cancellation Rate-->
+        <div class="card card-flush h-xl-100">
+												<!--begin::Header-->
+            <div class="card-header border-0 pt-5">
+													<h3 class="card-title align-items-start flex-column">
+                    <span class="card-label fw-bold text-gray-900">Service-Based Completion Rate</span>
+                    <span class="text-muted mt-1 fw-semibold fs-7">
+            Completion / total ratio for selected date range
+          </span>
+													</h3>
+
+													<div class="card-toolbar">
+                    <a href="/appointments?status=completed" class="btn btn-sm btn-light">View Completed</a>
+															</div>
+												</div>
+												<!--end::Header-->
+
+												<!--begin::Body-->
+            <div class="card-body pt-5" id="service-completion-rates-list">
+                <!-- Items will be dynamically loaded here -->
+												</div>
+												<!--end::Body-->
+											</div>
+        <!--end::List widget-->
+										</div>
+										<!--end::Col-->
+
+										<!--begin::Col-->
+    <div class="col-xl-8 mb-10">
+        <!--begin::Chart widget: Service Time & Revenue-->
+        <div class="card card-flush h-xl-100">
+												<!--begin::Header-->
+												<div class="card-header pt-7">
+													<h3 class="card-title align-items-start flex-column">
+                    <span class="card-label fw-bold text-gray-800">Service Statistics</span>
+                    <span class="text-gray-500 mt-1 fw-semibold fs-6">Time spent & revenue (by service)</span>
+													</h3>
+
+													<div class="card-toolbar">
+                    <!--begin::Daterangepicker-->
+                    <div id="service-stats-daterangepicker" data-kt-daterangepicker="true" data-kt-daterangepicker-opens="left" class="btn btn-sm btn-light d-flex align-items-center px-4">
+                        <div class="text-gray-600 fw-bold" id="service-stats-date-range">Date range...</div>
+                        <i class="ki-duotone ki-calendar-8 text-gray-500 lh-0 fs-2 ms-2 me-0">
+                            <span class="path1"></span><span class="path2"></span><span class="path3"></span>
+                            <span class="path4"></span><span class="path5"></span><span class="path6"></span>
+                        </i>
+													</div>
+                    <!--end::Daterangepicker-->
+                </div>
+												</div>
+												<!--end::Header-->
+
+												<!--begin::Body-->
+            <div class="card-body d-flex flex-column px-0 pt-3 pb-5">
+                <!--begin::Chart-->
+                <div id="kt_service_stats_chart" class="h-325px w-100 min-h-auto ps-4 pe-6"></div>
+                <!--end::Chart-->
+
+                <!--begin::Legend / Summary-->
+                <div class="px-6 pt-6">
+                    <div class="d-flex flex-wrap gap-6">
+																		<div class="d-flex align-items-center">
+                            <span class="bullet bullet-dot me-2"></span>
+                            <span class="text-gray-600 fw-semibold">Duration (min)</span>
+																			</div>
+																		<div class="d-flex align-items-center">
+                            <span class="bullet bullet-dot me-2"></span>
+                            <span class="text-gray-600 fw-semibold">Revenue (₺)</span>
+																			</div>
+                        <div class="ms-auto">
+                            <a href="/services/top-selling" class="btn btn-sm btn-light">Detailed Report</a>
+																			</div>
+																		</div>
+																			</div>
+                <!--end::Legend / Summary-->
+																			</div>
+            <!--end::Body-->
+																		</div>
+        <!--end::Chart widget-->
+										</div>
+										<!--end::Col-->
+									</div>
+									<!--end::Row-->
+
+
+
+<div class="row g-5 g-xl-10">
+    <div class="col-xl-12">
+        <!--begin::Chart widget: Average Revenue + Service Revenue-->
+											<div class="card card-flush h-xl-100">
+												<!--begin::Header-->
+            <div class="card-header pt-5">
+													<!--begin::Title-->
+													<h3 class="card-title align-items-start flex-column">
+                    <span class="card-label fw-bold text-gray-900">Revenue Overview</span>
+                    <span class="text-gray-500 mt-1 fw-semibold fs-6">Revenue by service and overall average</span>
+													</h3>
+													<!--end::Title-->
+
+													<!--begin::Toolbar-->
+													<div class="card-toolbar">
+                    <!--begin::Daterangepicker (Servis İstatistikleri kartındaki gibi)-->
+                    <div id="revenue-overview-daterangepicker" data-kt-daterangepicker="true" data-kt-daterangepicker-opens="left" class="btn btn-sm btn-light d-flex align-items-center px-4">
+                        <!--begin::Display range-->
+                        <div class="text-gray-600 fw-bold" id="revenue-overview-date-range">Date range...</div>
+                        <!--end::Display range-->
+                        <i class="ki-duotone ki-calendar-8 text-gray-500 lh-0 fs-2 ms-2 me-0">
+																<span class="path1"></span>
+																<span class="path2"></span>
+																<span class="path3"></span>
+																<span class="path4"></span>
+                            <span class="path5"></span>
+                            <span class="path6"></span>
+                        </i>
+															</div>
+                    <!--end::Daterangepicker-->
+													</div>
+													<!--end::Toolbar-->
+												</div>
+												<!--end::Header-->
+
+            <!--begin::Body-->
+            <div class="card-body pt-6">
+                <!--begin::Statistics-->
+                <div class="mb-5">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="fs-1 fw-semibold text-gray-500 me-1 mt-n1">₺</span>
+                        <!-- Tüm ortalama gelir -->
+                        <span class="fs-3x fw-bold text-gray-800 me-2 lh-1 ls-n2" id="avg-revenue-all">0</span>
+
+                        <!-- Trend (opsiyonel) -->
+                        <span class="badge fs-base" id="avg-revenue-trend">
+          <i class="ki-duotone ki-arrow-up fs-5 ms-n1" id="avg-revenue-trend-icon">
+            <span class="path1"></span>
+            <span class="path2"></span>
+          </i><span id="avg-revenue-change-pct">0</span>%
+        </span>
+                    </div>
+
+                    <span class="fs-6 fw-semibold text-gray-500">Average revenue of all appointments in selected date range</span>
+                </div>
+                <!--end::Statistics-->
+
+													<!--begin::Chart-->
+                <div id="kt_chart_widget_revenue_by_service" class="ms-n5 min-h-auto" style="height: 275px"></div>
+													<!--end::Chart-->
+                
+												</div>
+            <!--end::Body-->
+											</div>
+        <!--end::Chart widget-->
+
+        <!--
+        Backend placeholder örnekleri:
+        - avg_revenue_all: "8.550" (formatlı)
+        - avg_revenue_change_pct: "2.2" (yukarı/aşağı duruma göre badge rengi değişebilir)
+        Chart (kt_chart_widget_revenue_by_service):
+        - X: servis isimleri
+        - Series-1: revenue_by_service (₺)
+        - (opsiyonel) Series-2: total_revenue_line / avg_revenue_line
+        -->
+
+										</div>
+									</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Dashboard API Integration
+document.addEventListener('DOMContentLoaded', async function() {
+    // Token kontrolü
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+    
+    // API çağrıları için header
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    };
+    
+    let currentUserRole = null;
+    let revenueOverviewChart = null;  // Revenue overview chart değişkeni
+    
+    // Kullanıcı bilgisini al
+    try {
+        const userResponse = await fetch('/api/auth/me', { headers });
+        if (userResponse.status === 401) {
+            localStorage.removeItem('access_token');
+            window.location.href = '/login';
+            return;
+        }
+        const user = await userResponse.json();
+        currentUserRole = user.role;
+    } catch (error) {
+        console.error('Error loading user info:', error);
+        return;
+    }
+    
+    // Bugünün istatistiklerini yükle
+    async function loadTodayStats() {
+        try {
+            const response = await fetch('/api/dashboard/today-stats', { headers });
+            if (!response.ok) throw new Error('Failed to load today stats');
+            
+            const data = await response.json();
+            
+            // Header text güncelle
+            const headerText = document.getElementById('today-header-text');
+            if (headerText) {
+                if (currentUserRole === 'staff') {
+                    headerText.innerHTML = `
+                        <span class="opacity-75">Today</span>
+                        <span class="position-relative d-inline-block">
+                            <a href="/appointments?date=today" class="link-white opacity-75-hover fw-bold d-block mb-1">
+                                ${data.today_total} appointment${data.today_total !== 1 ? 's' : ''}
+                            </a>
+                            <span class="position-absolute opacity-50 bottom-0 start-0 border-2 border-body border-bottom w-100"></span>
+                        </span>
+                    `;
+                } else {
+                    headerText.innerHTML = `
+                        <span class="opacity-75">Today total</span>
+                        <span class="position-relative d-inline-block">
+                            <a href="/appointments?date=today" class="link-white opacity-75-hover fw-bold d-block mb-1">
+                                ${data.today_total} appointment${data.today_total !== 1 ? 's' : ''}
+                            </a>
+                            <span class="position-absolute opacity-50 bottom-0 start-0 border-2 border-body border-bottom w-100"></span>
+                        </span>
+                    `;
+                }
+            }
+            
+            // Stats güncelle
+            document.getElementById('today-total').textContent = data.today_total || 0;
+            document.getElementById('today-completed').textContent = data.today_completed || 0;
+            document.getElementById('today-cancelled').textContent = data.today_cancelled || 0;
+            document.getElementById('today-revenue').textContent = parseFloat(data.today_revenue || 0).toFixed(2) + '₺';
+        } catch (error) {
+            console.error('Error loading today stats:', error);
+        }
+    }
+    
+    // Performans istatistiklerini yükle
+    async function loadPerformanceStats() {
+        try {
+            const response = await fetch('/api/dashboard/performance', { headers });
+            if (!response.ok) throw new Error('Failed to load performance stats');
+            
+            const data = await response.json();
+            
+            // 7 gün
+            document.getElementById('w7-completed').textContent = data.w7.completed || 0;
+            document.getElementById('w7-cancelled').textContent = data.w7.cancelled || 0;
+            document.getElementById('w7-total').textContent = data.w7.total || 0;
+            document.getElementById('w7-revenue').textContent = parseFloat(data.w7.revenue || 0).toFixed(2);
+            
+            // MTD
+            document.getElementById('mtd-completed').textContent = data.mtd.completed || 0;
+            document.getElementById('mtd-cancelled').textContent = data.mtd.cancelled || 0;
+            document.getElementById('mtd-total').textContent = data.mtd.total || 0;
+            document.getElementById('mtd-revenue').textContent = parseFloat(data.mtd.revenue || 0).toFixed(2);
+            
+            // 30 gün
+            document.getElementById('d30-completed').textContent = data.d30.completed || 0;
+            document.getElementById('d30-cancelled').textContent = data.d30.cancelled || 0;
+            document.getElementById('d30-total').textContent = data.d30.total || 0;
+            document.getElementById('d30-revenue').textContent = parseFloat(data.d30.revenue || 0).toFixed(2);
+        } catch (error) {
+            console.error('Error loading performance stats:', error);
+        }
+    }
+    
+    // Yaklaşan randevuları yükle
+    async function loadUpcomingAppointments() {
+        try {
+            const response = await fetch('/api/dashboard/upcoming?limit=3', { headers });
+            if (!response.ok) throw new Error('Failed to load upcoming appointments');
+            
+            const appointments = await response.json();
+            
+            // Her slide için veriyi doldur
+            for (let i = 0; i < 3; i++) {
+                const index = i + 1;
+                const appointment = appointments[i];
+                
+                if (appointment) {
+                    // Customer name
+                    const customerEl = document.getElementById(`upcoming-${index}-customer`);
+                    if (customerEl) customerEl.textContent = appointment.customer_full_name || '-';
+                    
+                    // Time range
+                    const timeEl = document.getElementById(`upcoming-${index}-time`);
+                    if (timeEl) {
+                        const date = new Date(appointment.appointment_date);
+                        timeEl.textContent = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+                    }
+                    
+                    // Services
+                    const servicesEl = document.getElementById(`upcoming-${index}-services`);
+                    if (servicesEl) {
+                        servicesEl.innerHTML = '';
+                        appointment.services.slice(0, 2).forEach(service => {
+                            const badge = document.createElement('span');
+                            badge.className = 'badge badge-light-primary';
+                            badge.textContent = service;
+                            servicesEl.appendChild(badge);
+                        });
+                    }
+                    
+                    // Links
+                    const detailLink = document.getElementById(`upcoming-${index}-detail`);
+                    const editLink = document.getElementById(`upcoming-${index}-edit`);
+                    if (detailLink) detailLink.href = `/appointments/${appointment.id}`;
+                    if (editLink) editLink.href = `/appointments/${appointment.id}/edit`;
+                } else {
+                    // Boş slide
+                    const customerEl = document.getElementById(`upcoming-${index}-customer`);
+                    const timeEl = document.getElementById(`upcoming-${index}-time`);
+                    const servicesEl = document.getElementById(`upcoming-${index}-services`);
+                    if (customerEl) customerEl.textContent = 'No appointments';
+                    if (timeEl) timeEl.textContent = '-';
+                    if (servicesEl) servicesEl.innerHTML = '';
+                }
+            }
+        } catch (error) {
+            console.error('Error loading upcoming appointments:', error);
+        }
+    }
+    
+    // Servis bazlı tamamlanma oranlarını yükle
+    async function loadServiceCompletionRates() {
+        try {
+            const response = await fetch('/api/dashboard/service-completion-rates?limit=5', { headers });
+            if (!response.ok) throw new Error('Failed to load completion rates');
+            
+            const rates = await response.json();
+            const container = document.getElementById('service-completion-rates-list');
+            
+            if (!container) return;
+            
+            if (rates.length === 0) {
+                container.innerHTML = '<div class="text-center py-5"><p class="text-muted">No data found</p></div>';
+                return;
+            }
+            
+            let html = '';
+            rates.forEach((rate, index) => {
+                const isLast = index === rates.length - 1;
+                html += `
+                    <div class="d-flex flex-stack">
+                        <div class="d-flex align-items-center me-3">
+                            <div class="symbol symbol-40px me-4">
+                                <span class="symbol-label bg-light-success">
+                                    <i class="ki-duotone ki-abstract-26 fs-2 text-success">
+                                        <span class="path1"></span><span class="path2"></span>
+                                    </i>
+                                </span>
+                            </div>
+                            <div class="flex-grow-1">
+                                <a href="/services/${rate.service_id}/edit" class="text-gray-800 text-hover-primary fs-5 fw-bold lh-0">${rate.service_name}</a>
+                                <span class="text-gray-500 fw-semibold d-block fs-6">
+                                    ${rate.completed} completed / ${rate.total} total
+                                </span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center w-100 mw-140px">
+                            <div class="progress h-6px w-100 me-2 bg-light-success">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: ${rate.completion_rate}%"
+                                     aria-valuenow="${rate.completion_rate}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <span class="text-gray-500 fw-semibold">${rate.completion_rate}%</span>
+                        </div>
+                    </div>
+                    ${!isLast ? '<div class="separator separator-dashed my-3"></div>' : ''}
+                `;
+            });
+            
+            container.innerHTML = html;
+        } catch (error) {
+            console.error('Error loading completion rates:', error);
+        }
+    }
+    
+    // Servis istatistikleri chart'ını yükle
+    let serviceStatsChart = null;
+    let serviceStatsDateRange = { start: null, end: null };
+    
+    async function loadServiceStatisticsChart(startDate = null, endDate = null) {
+        try {
+            let url = '/api/dashboard/service-statistics';
+            if (startDate && endDate) {
+                url += `?start_date=${startDate}&end_date=${endDate}`;
+            }
+            const response = await fetch(url, { headers });
+            if (!response.ok) throw new Error('Failed to load service statistics');
+            
+            const data = await response.json();
+            const element = document.getElementById('kt_service_stats_chart');
+            
+            if (!element) return;
+            
+            if (!data.services || data.services.length === 0) {
+                element.innerHTML = '<div class="text-center py-5"><p class="text-muted">No data found</p></div>';
+                return;
+            }
+            
+            // Chart verilerini hazırla
+            const serviceNames = data.services.map(s => s.service_name);
+            const minutesData = data.services.map(s => s.minutes_spent);
+            const revenueData = data.services.map(s => parseFloat(s.revenue));
+            
+            const height = parseInt(KTUtil.css(element, 'height')) || 325;
+            const labelColor = KTUtil.getCssVariableValue('--bs-gray-500');
+            const borderColor = KTUtil.getCssVariableValue('--bs-gray-200');
+            const baseColor = KTUtil.getCssVariableValue('--bs-primary');
+            const secondaryColor = KTUtil.getCssVariableValue('--bs-info');
+            
+            // Mevcut chart varsa destroy et
+            if (serviceStatsChart) {
+                serviceStatsChart.destroy();
+            }
+            
+            const options = {
+                series: [{
+                    name: 'Duration (min)',
+                    data: minutesData,
+                    yAxisIndex: 0
+                }, {
+                    name: 'Revenue (₺)',
+                    data: revenueData,
+                    yAxisIndex: 1
+                }],
+                chart: {
+                    fontFamily: 'inherit',
+                    type: 'bar',
+                    height: height,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: ['30%'],
+                        borderRadius: [6]
+                    },
+                },
+                legend: {
+                    show: false
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    show: true,
+                    width: 2,
+                    colors: ['transparent']
+                },
+                xaxis: {
+                    categories: serviceNames,
+                    axisBorder: {
+                        show: false,
+                    },
+                    axisTicks: {
+                        show: false
+                    },
+                    labels: {
+                        style: {
+                            colors: labelColor,
+                            fontSize: '12px'
+                        },
+                        rotate: -45,
+                        rotateAlways: false
+                    }
+                },
+                yaxis: [{
+                    min: 0,
+                    labels: {
+                        style: {
+                            colors: labelColor,
+                            fontSize: '12px'
+                        },
+                        formatter: function(val) {
+                            return Math.round(val) + ' min';
+                        }
+                    }
+                }, {
+                    opposite: true,
+                    min: 0,
+                    labels: {
+                        style: {
+                            colors: labelColor,
+                            fontSize: '12px'
+                        },
+                        formatter: function(val) {
+                            return Math.round(val) + '₺';
+                        }
+                    }
+                }],
+                fill: {
+                    opacity: 1
+                },
+                states: {
+                    normal: {
+                        filter: {
+                            type: 'none',
+                            value: 0
+                        }
+                    },
+                    hover: {
+                        filter: {
+                            type: 'none',
+                            value: 0
+                        }
+                    },
+                    active: {
+                        allowMultipleDataPointsSelection: false,
+                        filter: {
+                            type: 'none',
+                            value: 0
+                        }
+                    }
+                },
+                tooltip: {
+                    style: {
+                        fontSize: '12px'
+                    },
+                    y: {
+                        formatter: function (val, opts) {
+                            if (opts.seriesIndex === 0) {
+                                return val + ' minutes';
+                            } else {
+                                return val.toFixed(2) + '₺';
+                            }
+                        }
+                    }
+                },
+                colors: [baseColor, secondaryColor],
+                grid: {
+                    borderColor: borderColor,
+                    strokeDashArray: 4,
+                    yaxis: {
+                        lines: {
+                            show: true
+                        }
+                    }
+                }
+            };
+            
+            serviceStatsChart = new ApexCharts(element, options);
+            serviceStatsChart.render();
+            
+            // Theme mode değiştiğinde chart'ı yeniden oluştur
+            if (typeof KTThemeMode !== 'undefined') {
+                KTThemeMode.on("kt.thememode.change", function() {
+                    if (serviceStatsChart) {
+                        serviceStatsChart.destroy();
+                        loadServiceStatisticsChart(serviceStatsDateRange.start, serviceStatsDateRange.end);
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error loading service statistics chart:', error);
+        }
+    }
+    
+    // Tüm verileri yükle
+    await Promise.all([
+        loadTodayStats(),
+        loadPerformanceStats(),
+        loadUpcomingAppointments(),
+        loadServiceCompletionRates(),
+        loadServiceStatisticsChart(),
+        loadRevenueOverview()
+    ]);
+    
+    // Daterangepicker event handler'ları
+    // Servis İstatistikleri daterangepicker
+    const serviceStatsDaterangepicker = document.getElementById('service-stats-daterangepicker');
+    if (serviceStatsDaterangepicker) {
+        $(serviceStatsDaterangepicker).on('apply.daterangepicker', function(ev, picker) {
+            const startDate = picker.startDate.format('YYYY-MM-DD');
+            const endDate = picker.endDate.format('YYYY-MM-DD');
+            serviceStatsDateRange = { start: startDate, end: endDate };
+            
+            // Tarih aralığını göster
+            const dateRangeEl = document.getElementById('service-stats-date-range');
+            if (dateRangeEl) {
+                dateRangeEl.textContent = picker.startDate.format('DD MMM YYYY') + ' - ' + picker.endDate.format('DD MMM YYYY');
+            }
+            
+            // Chart'ı yeniden yükle
+            if (serviceStatsChart) {
+                serviceStatsChart.destroy();
+            }
+            loadServiceStatisticsChart(startDate, endDate);
+        });
+        
+        $(serviceStatsDaterangepicker).on('cancel.daterangepicker', function(ev, picker) {
+            // Tarih aralığını sıfırla
+            serviceStatsDateRange = { start: null, end: null };
+            const dateRangeEl = document.getElementById('service-stats-date-range');
+            if (dateRangeEl) {
+                dateRangeEl.textContent = 'Date range...';
+            }
+            
+            // Chart'ı yeniden yükle (tüm veriler)
+            if (serviceStatsChart) {
+                serviceStatsChart.destroy();
+            }
+            loadServiceStatisticsChart();
+        });
+    }
+    
+    // Gelir Genel Bakış daterangepicker
+    const revenueOverviewDaterangepicker = document.getElementById('revenue-overview-daterangepicker');
+    if (revenueOverviewDaterangepicker) {
+        $(revenueOverviewDaterangepicker).on('apply.daterangepicker', function(ev, picker) {
+            const startDate = picker.startDate.format('YYYY-MM-DD');
+            const endDate = picker.endDate.format('YYYY-MM-DD');
+            revenueOverviewDateRange = { start: startDate, end: endDate };
+            
+            // Tarih aralığını göster
+            const dateRangeEl = document.getElementById('revenue-overview-date-range');
+            if (dateRangeEl) {
+                dateRangeEl.textContent = picker.startDate.format('DD MMM YYYY') + ' - ' + picker.endDate.format('DD MMM YYYY');
+            }
+            
+            // Chart'ı yeniden yükle
+            if (revenueOverviewChart) {
+                revenueOverviewChart.destroy();
+            }
+            loadRevenueOverview(startDate, endDate);
+        });
+        
+        $(revenueOverviewDaterangepicker).on('cancel.daterangepicker', function(ev, picker) {
+            // Tarih aralığını sıfırla
+            revenueOverviewDateRange = { start: null, end: null };
+            const dateRangeEl = document.getElementById('revenue-overview-date-range');
+            if (dateRangeEl) {
+                dateRangeEl.textContent = 'Date range...';
+            }
+            
+            // Chart'ı yeniden yükle (tüm veriler)
+            if (revenueOverviewChart) {
+                revenueOverviewChart.destroy();
+            }
+            loadRevenueOverview();
+        });
+    }
+    
+    // Gelir genel bakış verilerini yükle
+    async function loadRevenueOverview(startDate = null, endDate = null) {
+        try {
+            let url = '/api/dashboard/revenue-overview';
+            if (startDate && endDate) {
+                url += `?start_date=${startDate}&end_date=${endDate}`;
+            }
+            const response = await fetch(url, { headers });
+            if (!response.ok) throw new Error('Failed to load revenue overview');
+            
+            const data = await response.json();
+            
+            // Ortalama gelir göster
+            const avgRevenueEl = document.getElementById('avg-revenue-all');
+            if (avgRevenueEl) {
+                avgRevenueEl.textContent = parseFloat(data.avg_revenue_all || 0).toFixed(2);
+            }
+            
+            // Trend badge'i güncelle
+            const trendBadge = document.getElementById('avg-revenue-trend');
+            const trendIcon = document.getElementById('avg-revenue-trend-icon');
+            const trendPct = document.getElementById('avg-revenue-change-pct');
+            
+            if (trendBadge && trendIcon && trendPct) {
+                const changePct = data.avg_revenue_change_pct || 0;
+                trendPct.textContent = Math.abs(changePct).toFixed(2);
+                
+                if (changePct > 0) {
+                    trendBadge.className = 'badge badge-light-success fs-base';
+                    trendIcon.className = 'ki-duotone ki-arrow-up fs-5 text-success ms-n1';
+                } else if (changePct < 0) {
+                    trendBadge.className = 'badge badge-light-danger fs-base';
+                    trendIcon.className = 'ki-duotone ki-arrow-down fs-5 text-danger ms-n1';
+                } else {
+                    trendBadge.className = 'badge badge-light fs-base';
+                    trendIcon.className = 'ki-duotone ki-minus fs-5 text-gray-500 ms-n1';
+                }
+            }
+            
+            // Chart'ı yükle
+            const element = document.getElementById('kt_chart_widget_revenue_by_service');
+            if (!element) return;
+            
+            if (!data.services || data.services.length === 0) {
+                element.innerHTML = '<div class="text-center py-5"><p class="text-muted">No data found</p></div>';
+                return;
+            }
+            
+            // Chart verilerini hazırla - KTChartsWidget8 referansı (bubble chart)
+            // Bubble chart data format: [[x, y, z]] where x=service_index, y=revenue, z=avg_revenue_per_service
+            const bubbleData = data.services.map((s, index) => {
+                const revenue = parseFloat(s.revenue || 0);
+                const avgRevenue = parseFloat(s.avg_revenue_per_service || 0);
+                // X: servis index (0, 1, 2, ...), Y: toplam gelir, Z: ortalama gelir (bubble boyutu)
+                return [[index * 100 + 50, revenue, avgRevenue]];
+            });
+            
+            // Max değerleri hesapla (axis limitleri için)
+            const maxRevenue = Math.max(...data.services.map(s => parseFloat(s.revenue || 0)), 100);
+            const maxAvgRevenue = Math.max(...data.services.map(s => parseFloat(s.avg_revenue_per_service || 0)), 100);
+            const maxAxis = Math.max(maxRevenue, maxAvgRevenue) * 1.2; // %20 padding
+            
+            const height = parseInt(KTUtil.css(element, 'height')) || 275;
+            const labelColor = KTUtil.getCssVariableValue('--bs-gray-500');
+            const borderColor = KTUtil.getCssVariableValue('--bs-border-dashed-color');
+            
+            // KTChartsWidget8 renkleri (bubble chart için)
+            const colors = [
+                KTUtil.getCssVariableValue('--bs-primary'),
+                KTUtil.getCssVariableValue('--bs-success'),
+                KTUtil.getCssVariableValue('--bs-warning'),
+                KTUtil.getCssVariableValue('--bs-danger'),
+                KTUtil.getCssVariableValue('--bs-info'),
+                '#43CED7'
+            ];
+            
+            // Mevcut chart varsa destroy et
+            if (revenueOverviewChart) {
+                revenueOverviewChart.destroy();
+            }
+            
+            // KTChartsWidget8 referansı ile bubble chart
+            const options = {
+                series: data.services.map((s, index) => ({
+                    name: s.service_name,
+                    data: bubbleData[index]
+                })),
+                chart: {
+                    fontFamily: 'inherit',
+                    type: 'bubble',
+                    height: height,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                plotOptions: {
+                    bubble: {
+                    }
+                },
+                stroke: {
+                    show: false,
+                    width: 0
+                },
+                legend: {
+                    show: false
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                xaxis: {
+                    type: 'numeric',
+                    tickAmount: 7,
+                    min: 0,
+                    max: (data.services.length - 1) * 100 + 100,
+                    axisBorder: {
+                        show: false,
+                    },
+                    axisTicks: {
+                        show: true,
+                        height: 0,
+                    },
+                    labels: {
+                        show: true,
+                        trim: true,
+                        style: {
+                            colors: labelColor,
+                            fontSize: '13px'
+                        },
+                        formatter: function(val) {
+                            const index = Math.round(val / 100);
+                            if (index >= 0 && index < data.services.length) {
+                                return data.services[index].service_name;
+                            }
+                            return '';
+                        }
+                    }
+                },
+                yaxis: {
+                    tickAmount: 7,
+                    min: 0,
+                    max: Math.ceil(maxAxis / 100) * 100, // Yuvarlanmış max değer
+                    labels: {
+                        style: {
+                            colors: labelColor,
+                            fontSize: '13px'
+                        },
+                        formatter: function(val) {
+                            return Math.round(val) + '₺';
+                        }
+                    }
+                },
+                tooltip: {
+                    style: {
+                        fontSize: '12px'
+                    },
+                    custom: function({seriesIndex, dataPointIndex, w}) {
+                        const service = data.services[seriesIndex];
+                        const revenue = parseFloat(service.revenue || 0);
+                        const avgRevenue = parseFloat(service.avg_revenue_per_service || 0);
+                        return `
+                            <div class="p-2">
+                                <div class="fw-bold">${service.service_name}</div>
+                                <div>Total Revenue: ${revenue.toFixed(2)}₺</div>
+                                <div>Average Revenue: ${avgRevenue.toFixed(2)}₺</div>
+                                <div>Appointment Count: ${service.appointment_count || 0}</div>
+                            </div>
+                        `;
+                    }
+                },
+                crosshairs: {
+                    show: true,
+                    position: 'front',
+                    stroke: {
+                        color: borderColor,
+                        width: 1,
+                        dashArray: 0,
+                    }
+                },
+                colors: colors.slice(0, data.services.length),
+                fill: {
+                    opacity: 1,
+                },
+                markers: {
+                    strokeWidth: 0
+                },
+                grid: {
+                    borderColor: borderColor,
+                    strokeDashArray: 4,
+                    padding: {
+                        right: 20
+                    },
+                    yaxis: {
+                        lines: {
+                            show: true
+                        }
+                    }
+                }
+            };
+            
+            revenueOverviewChart = new ApexCharts(element, options);
+            revenueOverviewChart.render();
+            
+            // Theme mode değiştiğinde chart'ı yeniden oluştur
+            if (typeof KTThemeMode !== 'undefined') {
+                KTThemeMode.on("kt.thememode.change", function() {
+                    if (revenueOverviewChart) {
+                        revenueOverviewChart.destroy();
+                        loadRevenueOverview(revenueOverviewDateRange.start, revenueOverviewDateRange.end);
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error loading revenue overview:', error);
+        }
+    }
+});
+</script>
+{% endblock %}
+
